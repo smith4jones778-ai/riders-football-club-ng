@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Riders FC — Official Home</title>
+
+  <!-- SEO Meta -->
+  <meta name="description" content="Riders FC — Passion • Teamwork • Glory. Official home of Riders Football Club. Explore news, fixtures, player profiles, match highlights, and join our fan community." />
+  <meta name="keywords" content="Riders FC, football club, soccer, sports, fixtures, news, players, Nigeria football, team Riders" />
+  <meta name="author" content="Riders FC" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#004d1a" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Riders FC — Official Home" />
+  <meta property="og:description" content="Follow Riders FC: Passion • Teamwork • Glory." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="riders-logo.jpg" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Riders FC — Official Home" />
+  <meta name="twitter:description" content="Follow Riders FC: Passion • Teamwork • Glory." />
+  <meta name="twitter:image" content="riders-logo.jpg" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="riders-logo.jpg">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif;}
+body{background:#f5f9f5;color:#111;line-height:1.6;overflow-x:hidden;}
+
+/* HEADER */
+header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 20px;background:#004d1a;color:#fff;
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 6px 20px rgba(0,0,0,0.3);
+  transform:translateZ(0);
+}
+.logo{display:flex;align-items:center;gap:10px;perspective:1000px;}
+.logo img{
+  width:58px;height:58px;border-radius:50%;object-fit:cover;
+  transform:rotateY(0deg);transition:transform .6s ease;
+}
+.logo img:hover{transform:rotateY(360deg);}
+.logo h1{font-size:22px;font-weight:900;letter-spacing:1px;text-shadow:0 2px 4px rgba(0,0,0,0.4);}
+
+/* 3D NAV BUTTONS */
+nav{display:flex;gap:18px;}
+nav a{
+  position:relative;padding:10px 18px;background:linear-gradient(180deg,#007a2f,#004d1a);
+  color:#fff;text-decoration:none;font-weight:800;border-radius:10px;
+  box-shadow:0 6px 0 #002f12,0 6px 16px rgba(0,0,0,0.3);
+  transform:translateY(0);transition:all .2s ease;
+}
+nav a:hover{transform:translateY(2px);box-shadow:0 3px 0 #002f12,0 3px 8px rgba(0,0,0,0.2);}
+nav a:active{transform:translateY(6px);box-shadow:0 0 0 #002f12;}
+
+/* MOVING QUOTE */
+.moving-quote{
+  width:100%;overflow:hidden;background:#007a2f;color:#fff;
+  padding:10px 0;font-weight:800;font-size:18px;
+  box-shadow:inset 0 -4px 6px rgba(0,0,0,0.2);
+}
+.moving-quote span{
+  display:inline-block;white-space:nowrap;padding-left:100%;
+  animation:scrollQuote 25s linear infinite;
+}
+@keyframes scrollQuote{
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-100%);}
+}
+
+/* HERO */
+.hero {
+  position: relative;
+  max-width: 1200px;
+  width: 90%;
+  aspect-ratio: 16 / 9;
+  margin: 40px auto;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 6px solid #004d1a;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  background: #000 url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSATtUB_GlTqA70fYKagumRhC5w6N6ZVHzbPw&s') center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  z-index: 0;
+}
+
+.hero-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* full image visible within frame */
+  background-color: #000;
+}
+
+.hero-slide.active {
+  opacity: 1;
+  z-index: 2;
+}
+
+.hero-caption {
+  position: absolute;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 22px;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  max-width: 90%;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .hero {
+    height: 60vh;
+    width: 92%;
+    margin: 30px auto;
+  }
+}
+@media (max-width: 768px) {
+  .hero {
+    height: 55vh;
+    width: 94%;
+    border-width: 4px;
+  }
+  .hero-caption {
+    font-size: 16px;
+    padding: 8px 14px;
+  }
+}
+@media (max-width: 480px) {
+  .hero {
+    height: 45vh;
+    width: 96%;
+    border-width: 3px;
+    margin: 20px auto;
+  }
+  .hero-caption {
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+}
+ .results-container, .upcoming-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.match-card {
+  background: #fff;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 16px;
+  transition: transform .2s;
+}
+
+.match-card:hover { transform: translateY(-3px); }
+.match-date { color: #007a2f; font-weight: 700; }
+.match-score { color: #004d1a; font-weight: 800; }
+
+
+/* TEAM SPOTLIGHT */
+.players-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.player-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.1);
+  text-align: center;
+  padding: 20px 16px;
+  transition: all .3s ease;
+  transform-style: preserve-3d;
+}
+
+.player-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 12px 26px rgba(0,77,26,0.25);
+}
+
+.player-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+  overflow: hidden;
+  border: 4px solid #004d1a;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.player-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-card h3 {
+  font-size: 20px;
+  color: #004d1a;
+  margin-top: 8px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+.player-card p {
+  margin: 4px 0;
+  color: #333;
+  font-weight: 600;
+}
+
+.player-stats {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #007a2f;
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  .player-card {
+    padding: 16px;
+  }
+  .player-photo {
+    width: 100px;
+    height: 100px;
+  }
+  .player-card h3 {
+    font-size: 18px;
+  }
+}
+
+
+/* FAN SHOUTOUTS */
+.shoutouts-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  margin-top: 20px;
+}
+.shoutout-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  transition: all .3s ease;
+  transform: rotateX(0) scale(1);
+  border-top: 5px solid #004d1a;
+}
+.shoutout-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 12px 25px rgba(0,77,26,0.3);
+}
+.shoutout-card p {
+  font-style: italic;
+  color: #333;
+  margin-bottom: 10px;
+}
+.shoutout-card .fan-info {
+  font-weight: 700;
+  color: #004d1a;
+  font-size: 15px;
+}
+
+/* SHOUTOUT BUTTON */
+.shoutout-btn {
+  background: linear-gradient(180deg,#007a2f,#004d1a);
+  color: #fff;
+  font-weight: 800;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  box-shadow: 0 6px 16px rgba(0,77,26,0.3);
+  cursor: pointer;
+  transition: transform .2s;
+}
+.shoutout-btn:hover {
+  transform: translateY(-3px);
+}
+
+/* MODAL STYLES */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 999;
+  justify-content: center;
+  align-items: center;
+}
+.modal-content {
+  background: #fff;
+  border-radius: 14px;
+  padding: 30px 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  animation: popIn .4s ease;
+  position: relative;
+}
+@keyframes popIn {
+  from {transform: scale(0.7);opacity:0;}
+  to {transform: scale(1);opacity:1;}
+}
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 14px;
+  font-size: 26px;
+  cursor: pointer;
+  color: #004d1a;
+}
+#shoutoutForm input, #shoutoutForm textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-family: 'Inter', sans-serif;
+}
+#shoutoutForm textarea {
+  height: 80px;
+  resize: none;
+}
+#shoutoutForm button {
+  background: #004d1a;
+  color: #fff;
+  font-weight: 800;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  width: 100%;
+  cursor: pointer;
+}
+#shoutoutForm button:hover {
+  background: #007a2f;
+}
+
+
+/* VIDEO SLIDER */
+.video-slider{
+  max-width:1000px;margin:60px auto;padding:20px;background:#fff;
+  border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.15);text-align:center;
+}
+.video-container{position:relative;overflow:hidden;border-radius:14px;}
+video{
+  width:100%;height:auto;display:block;pointer-events:none;
+  -webkit-user-select:none;user-select:none;
+}
+video::-webkit-media-controls{display:none !important;}
+video::-webkit-media-controls-enclosure{display:none !important;}
+video:focus{outline:none;}
+video[oncontextmenu]{user-select:none;-webkit-user-select:none;}
+.controls{
+  margin-top:20px;display:flex;justify-content:center;gap:14px;flex-wrap:wrap;
+}
+.controls button{
+  padding:12px 20px;border:none;border-radius:10px;cursor:pointer;
+  font-weight:800;background:linear-gradient(180deg,#007a2f,#004d1a);
+  color:#fff;box-shadow:0 6px 0 #002f12,0 6px 16px rgba(0,0,0,0.3);
+  transform:translateY(0);transition:transform .2s,box-shadow .2s;
+}
+.controls button:hover{transform:translateY(2px);box-shadow:0 3px 0 #002f12,0 3px 8px rgba(0,0,0,0.2);}
+.controls button:active{transform:translateY(6px);box-shadow:0 0 0 #002f12;}
+
+/* ABOUT SECTION WITH COACH */
+.section{max-width:1100px;margin:60px auto;padding:0 20px;}
+.section h2{text-align:center;color:#004d1a;font-size:28px;margin-bottom:20px;text-shadow:0 2px 4px rgba(0,0,0,0.2);}
+.about{
+  display:flex;flex-direction:column;align-items:center;
+  background:#fff;padding:30px;border-radius:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.1);
+}
+.coach-pic{
+  width:200px;height:200px;border-radius:50%;overflow:hidden;
+  box-shadow:0 10px 25px rgba(0,0,0,0.25);
+  transform:rotateY(0deg);transition:transform .8s ease;
+}
+.coach-pic:hover{transform:rotateY(360deg);}
+.coach-pic img{width:100%;height:100%;object-fit:cover;}
+.about p{margin-top:20px;text-align:center;color:#333;font-size:17px;max-width:700px;}
+
+/* FOOTER */
+footer{
+  background:#004d1a;color:#fff;text-align:center;
+  padding:30px 14px;margin-top:60px;box-shadow:0 -6px 16px rgba(0,0,0,0.3);
+}
+footer img{width:60px;border-radius:50%;margin-bottom:10px;box-shadow:0 4px 10px rgba(0,0,0,0.4);}
+.socials{display:flex;justify-content:center;gap:14px;margin-top:10px;}
+.socials a{
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;background:rgba(255,255,255,0.1);
+  color:#fff;text-decoration:none;font-weight:700;
+  box-shadow:0 4px 10px rgba(0,0,0,0.3);transition:transform .2s;
+}
+.socials a:hover{transform:translateY(-3px);background:rgba(255,255,255,0.25);}
+@media(max-width:700px){.hero-caption{font-size:16px;max-width:90%;}.about{padding:20px;}}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="logo">
+    <img src="riders-logo.jpg" alt="Riders FC Logo">
+    <h1>Riders FC</h1>
+  </div>
+  <nav>
+    <a href="about.html">About</a>
+    <a href="#videos">Highlights</a>
+  </nav>
+</header>
+
+<!-- MOVING QUOTE -->
+<div class="moving-quote"><span>"Discipline, Determination, and Dedication — The Spirit of Riders FC Moves Forward Relentlessly!"</span></div>
+
+<!-- HERO SLIDES -->
+<section class="hero" id="hero">
+  <div class="hero-slide active" data-caption="Welcome to Riders FC — Passion • Teamwork • Glory"><img src="rider1.jpeg" alt="Team celebration"></div>
+  <div class="hero-slide" data-caption="Training Day — Hard work builds Champions"><img src="hero2.jpeg" alt="Training"></div>
+  <div class="hero-slide" data-caption="Riders Arena — Our Fortress, Our Pride"><img src="photo1.jpeg" alt="Stadium"></div>
+  <div class="hero-slide" data-caption="Capturing Victory Moments"><img src="photo4.jpeg" alt="Victory"></div>
+  <div class="hero-slide" data-caption="Fans — The Heartbeat of Riders FC"><img src="hero5.jpg" alt="Fans"></div>
+  <div class="hero-slide" data-caption="Youth Academy — Building the Future"><img src="hero6.jpg" alt="Youth"></div>
+  <div class="hero-slide" data-caption="Legends Never Stop Fighting"><img src="hero7.jpg" alt="Legends"></div>
+  <div class="hero-slide" data-caption="Every Match, A New Battle"><img src="hero8.jpg" alt="Battle"></div>
+  <div class="hero-slide" data-caption="Unity • Strength • Determination"><img src="hero9.jpg" alt="Unity"></div>
+  <div class="hero-slide" data-caption="Discipline Defines Us"><img src="hero10.jpg" alt="Discipline"></div>
+  <div class="hero-slide" data-caption="Dream Big, Play Bold"><img src="hero11.jpg" alt="Dream Big"></div>
+  <div class="hero-slide" data-caption="Together We Rise — Riders FC"><img src="hero12.jpg" alt="Together"></div>
+  <div class="hero-caption" id="heroCaption">Welcome to Riders FC — Passion • Teamwork • Glory</div>
+</section>
+
+<!-- RESULTS & UPCOMING MATCHES -->
+<section class="section" id="results">
+  <h2>Recent Results</h2>
+  <div class="results-container"></div>
+</section>
+
+<section class="section" id="upcoming">
+  <h2>Upcoming Matches</h2>
+  <div class="upcoming-container"></div>
+</section>
+
+<!-- TEAM SPOTLIGHT -->
+<section class="section" id="team">
+  <h2>Team Spotlight</h2>
+  <div class="players-container" id="playersContainer">
+    <p style="text-align:center;color:#666;">Loading players...</p>
+  </div>
+</section>
+
+
+
+<!-- VIDEO SLIDER -->
+<section class="video-slider" id="videos">
+  <h2>Match Highlights</h2>
+  <div class="video-container" oncontextmenu="return false;">
+    <video id="videoPlayer" preload="metadata" playsinline></video>
+  </div>
+  <div class="controls">
+    <button id="prevBtn">Previous</button>
+    <button id="playPauseBtn">Play</button>
+    <button id="nextBtn">Next</button>
+  </div>
+</section>
+
+<section id="about" class="section about">
+  <h2>Meet Our Coach</h2>
+  <div class="coach-pic"><img src="coach.jpeg" alt="Coach Picture"></div>
+  <p>Riders Football Club thrives under the leadership of our experienced coach, whose vision and tactics bring out the best in every player. 
+  With a focus on teamwork, discipline, and continuous improvement, our coach inspires the team to greater heights.</p>
+</section>
+
+<!-- FAN SHOUTOUTS -->
+<section class="section" id="shoutouts">
+  <h2>💬 Fan Shoutouts</h2>
+
+  <p style="text-align:center;color:#004d1a;font-weight:600;margin-bottom:14px;">
+    Share your love and support for Riders FC! 💚 <br>
+    <small style="color:#555;">All shoutouts will be reviewed and approved by our admin team before publishing.</small>
+  </p>
+
+  <div class="shoutouts-container" id="shoutoutsContainer">
+    <p style="text-align:center;color:#666;">Loading fan shoutouts...</p>
+  </div>
+
+  <div style="text-align:center;margin-top:20px;">
+    <button class="shoutout-btn" onclick="openShoutoutForm()">Leave a Shoutout</button>
+  </div>
+</section>
+
+
+<!-- SHOUTOUT MODAL -->
+<div id="shoutoutModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeShoutoutForm()">&times;</span>
+    <h3>💚 Share Your Riders Spirit!</h3>
+    <form id="shoutoutForm">
+      <input type="text" id="fanName" placeholder="Your Name" required>
+      <input type="text" id="fanAddress" placeholder="City / Address" required>
+      <input type="tel" id="fanPhone" placeholder="Phone Number" required>
+      <textarea id="fanMessage" placeholder="Your Message..." required></textarea>
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+</div>
+
+<!-- APPLICATION PORTAL SECTION -->
+<section class="section" id="applications">
+  <h2>📝 Apply to Join Riders FC</h2>
+  <p style="text-align:center; color:#333; max-width:600px; margin:auto;">
+    Are you ready to be part of Riders FC? Submit your application and track it securely in your personal dashboard. 
+    You’ll receive updates as your application progresses from <b>Pending → Processing → Completed</b>.
+  </p>
+  <div style="text-align:center; margin-top:20px;">
+    <a href="riders-apply.html">
+      <button style="
+        background:#004d1a; 
+        color:#fff; 
+        font-weight:700; 
+        border:none; 
+        border-radius:12px; 
+        padding:14px 24px; 
+        font-size:16px; 
+        cursor:pointer;
+        transition:0.3s;
+      "
+      onmouseover="this.style.background='#007a2f';" 
+      onmouseout="this.style.background='#004d1a';">
+        Go to Application Portal
+      </button>
+    </a>
+  </div>
+  <p style="text-align:center; color:#666; font-size:14px; margin-top:12px;">
+    Note: All applications will be reviewed and approved by the admin. Login required to track status.
+  </p>
+</section>
+
+
+<footer id="contact">
+  <img src="riders-logo.jpg" alt="Riders FC">
+  <p>Riders FC — Passion • Teamwork • Glory<br>
+  Email: <a href="mailto:info@ridersfc.com" style="color:#fff;text-decoration:underline;">info@ridersfc.com</a><br>
+  © 2025 Riders Football Club. All Rights Reserved.</p>
+  <div class="socials">
+    <a href="https://facebook.com" target="_blank">F</a>
+    <a href="https://instagram.com" target="_blank">I</a>
+    <a href="https://twitter.com" target="_blank">X</a>
+    <a href="https://wa.me/2348102341648" target="_blank">W</a>
+  </div>
+</footer>
+
+<script>
+/* HERO SLIDER FUNCTIONALITY */
+(function(){
+  const slides = document.querySelectorAll('.hero-slide');
+  const captionEl = document.getElementById('heroCaption');
+  let index = 0;
+  const interval = 5000;
+
+  function showSlide(i) {
+    slides.forEach((s, j) => s.classList.toggle('active', j === i));
+    captionEl.textContent = slides[i].getAttribute('data-caption');
+  }
+
+  setInterval(() => {
+    index = (index + 1) % slides.length;
+    showSlide(index);
+  }, interval);
+})();
+
+/* VIDEO SLIDER */
+(function(){
+  const video=document.getElementById('videoPlayer');
+  const list=['video1.mp4','video2.mp4','video3.mp4','video4.mp4','video5.mp4','video6.mp4','video7.mp4'];
+  let i=0,playing=false;
+  function load(n){
+    i=(n+list.length)%list.length;
+    video.src=list[i];
+    video.load();
+    if(playing) video.play().catch(()=>{});
+  }
+  document.getElementById('nextBtn').onclick=()=>load(i+1);
+  document.getElementById('prevBtn').onclick=()=>load(i-1);
+  document.getElementById('playPauseBtn').onclick=function(){
+    if(video.paused){video.play().catch(()=>{});playing=true;this.textContent='Pause';}
+    else{video.pause();playing=false;this.textContent='Play';}
+  };
+  video.addEventListener('contextmenu',e=>e.preventDefault());
+  video.addEventListener('loadedmetadata',()=>video.currentTime=0);
+  load(0);
+})();
+</script>
+<!-- FIREBASE & RESULTS/UPCOMING SCRIPT -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+  // Initialize Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyAFsHg9fK6IDnHbuxmBleEfIIfVGsuLDik",
+    authDomain: "profile-b825d.firebaseapp.com",
+    projectId: "profile-b825d",
+    storageBucket: "profile-b825d.firebasestorage.app",
+    messagingSenderId: "925276859161",
+    appId: "1:925276859161:web:194c60f6dbd9f1ef8bf388"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // Fetch Recent Results
+  const resultsContainer = document.querySelector('.results-container');
+  db.ref('results').limitToLast(3).on('value', snapshot => {
+    resultsContainer.innerHTML = '';
+    snapshot.forEach(child => {
+      const data = child.val();
+      const card = document.createElement('div');
+      card.className = 'match-card';
+      card.innerHTML = `<span class="match-date">${data.date}</span>
+                        <span>${data.team1} ${data.score1} - ${data.score2} ${data.team2}</span>`;
+      resultsContainer.prepend(card); // latest first
+    });
+  });
+
+  // Fetch Upcoming Matches
+  const upcomingContainer = document.querySelector('.upcoming-container');
+  db.ref('upcoming').limitToFirst(3).on('value', snapshot => {
+    upcomingContainer.innerHTML = '';
+    snapshot.forEach(child => {
+      const data = child.val();
+      const card = document.createElement('div');
+      card.className = 'match-card';
+      card.innerHTML = `<span class="match-date">${data.date}</span>
+                        <span>${data.team1} vs ${data.team2}</span>`;
+      upcomingContainer.appendChild(card);
+    });
+  });
+
+<!-- TEAM SPOTLIGHT FETCH -->
+
+  const playersContainer = document.getElementById('playersContainer');
+  const playersRef = firebase.database().ref('players');
+
+  playersRef.limitToFirst(8).on('value', snapshot => {
+    playersContainer.innerHTML = '';
+    if (!snapshot.exists()) {
+      playersContainer.innerHTML = '<p style="text-align:center;color:#666;">No players added yet.</p>';
+      return;
+    }
+
+    snapshot.forEach(child => {
+      const p = child.val();
+      const card = document.createElement('div');
+      card.className = 'player-card';
+      card.innerHTML = `
+        <div class="player-photo">
+          <img src="${p.photoURL || 'default-player.jpg'}" alt="${p.name || 'Player'}">
+        </div>
+        <h3>${p.name || 'Unnamed Player'}</h3>
+        <p>${p.position || 'Position Unknown'}</p>
+        <div class="player-stats">⚽ Goals: ${p.goals || 0} &nbsp; • &nbsp; 🎯 Assists: ${p.assists || 0}</div>
+      `;
+      playersContainer.appendChild(card);
+    });
+  });
+
+<!-- FAN SHOUTOUTS SCRIPT -->
+
+const shoutoutsRef = firebase.database().ref('fan_shoutouts');
+const shoutoutsContainer = document.getElementById('shoutoutsContainer');
+
+// Load up to 5 published shoutouts
+shoutoutsRef.orderByChild('approved').equalTo(true).limitToLast(5).on('value', snapshot => {
+  shoutoutsContainer.innerHTML = '';
+  if(!snapshot.exists()) {
+    shoutoutsContainer.innerHTML = '<p style="text-align:center;color:#666;">No shoutouts yet. Be the first to share!</p>';
+    return;
+  }
+  snapshot.forEach(child => {
+    const s = child.val();
+    const card = document.createElement('div');
+    card.className = 'shoutout-card';
+    card.innerHTML = `
+      <p>"${s.message}"</p>
+      <div class="fan-info">— ${s.name}, ${s.address}</div>
+    `;
+    shoutoutsContainer.prepend(card);
+  });
+});
+
+// Open / Close Modal
+function openShoutoutForm() {
+  document.getElementById('shoutoutModal').style.display = 'flex';
+}
+function closeShoutoutForm() {
+  document.getElementById('shoutoutModal').style.display = 'none';
+}
+
+// Submit Shoutout
+document.getElementById('shoutoutForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const data = {
+    name: document.getElementById('fanName').value,
+    address: document.getElementById('fanAddress').value,
+    phone: document.getElementById('fanPhone').value,
+    message: document.getElementById('fanMessage').value,
+    approved: false,
+    timestamp: Date.now()
+  };
+  shoutoutsRef.push(data).then(()=>{
+    alert('Thank you for your shoutout! It will appear after approval.');
+    closeShoutoutForm();
+    e.target.reset();
+  });
+});
+
+
+
+</script>
+
+</body>
+</html>
