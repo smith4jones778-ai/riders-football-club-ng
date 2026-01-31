@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Riders FC — Applicant Dashboard (Fixed)</title>
+<style>
+body{font-family:'Inter',sans-serif;background:#f5f9f5;margin:0;padding-bottom:60px}
+header{background:#004d1a;color:#fff;text-align:center;padding:18px 0;font-size:22px;font-weight:800;box-shadow:0 4px 10px rgba(0,0,0,0.3);}
+.container{max-width:1200px;margin:30px auto;padding:25px;background:#fff;border-radius:16px;box-shadow:0 8px 25px rgba(0,0,0,0.15);}
+h2,h3{color:#004d1a;text-align:center}
+hr{border:none;border-top:2px solid #007a2f;margin:25px 0}
+.dashboard-header{text-align:center;margin-bottom:30px}
+.greeting{font-size:20px;font-weight:700;color:#004d1a;margin-bottom:5px}
+.sub-greet{color:#555;font-size:14px}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-top:20px}
+.info-card{background:#f8fff8;border-left:5px solid #007a2f;border-radius:12px;padding:16px;box-shadow:0 2px 6px rgba(0,0,0,0.1)}
+.info-card h4{color:#004d1a;margin-bottom:8px}
+.info-card p{margin:4px 0;color:#333}
+button{background:#004d1a;color:#fff;font-weight:700;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;transition:0.3s}
+button:hover{background:#007a2f}
+.logout{background:#d32f2f}
+.logout:hover{background:#9b1c1c}
+.application-card{background:#f9f9f9;padding:16px;border-radius:10px;margin-bottom:18px;border-left:5px solid #007a2f}
+.status{font-weight:700}
+.status.pending{color:#d97706}
+.status.processing{color:#2563eb}
+.status.completed{color:#007a2f}
+.message-thread{background:#eef6ee;padding:10px;border-radius:8px;margin-top:10px;max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.message{margin:0;padding:10px;border-radius:8px;max-width:85%;font-size:14px;display:inline-block}
+.message .meta{display:block;font-size:11px;color:rgba(0,0,0,0.6);margin-top:6px}
+.message.admin{background:#004d1a;color:#fff;align-self:flex-start}
+.message.user{background:#cde6cd;color:#111;align-self:flex-end}
+.reply-box{margin-top:10px;display:flex;gap:10px;align-items:flex-start}
+.reply-box textarea{flex:1;padding:8px;border-radius:8px;border:1px solid #ccc;resize:none}
+.alert{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:20px 30px;border-radius:12px;box-shadow:0 8px 25px rgba(0,0,0,0.4);z-index:999;display:none;text-align:center}
+.alert h3{color:#004d1a;margin-bottom:10px}
+.alert button{background:#004d1a;color:#fff;border:none;padding:8px 14px;border-radius:8px}
+.small{font-size:12px;color:#555}
+.app-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+.app-actions button{padding:8px 12px;border-radius:8px}
+@media(max-width:600px){.info-grid{grid-template-columns:1fr}.reply-box{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<header>Riders FC Applicant Dashboard</header>
+
+<div class="container">
+  <div class="dashboard-header">
+    <div class="greeting" id="welcomeMsg">Welcome, Player</div>
+    <div class="sub-greet">Glad to have you with Riders FC. Keep your information up to date and follow your application progress below.</div>
+  </div>
+
+  <hr>
+
+  <h3>Your Registered Information</h3>
+  <div id="playerInfo" class="info-grid"><p style="text-align:center;color:#777;">Loading your details...</p></div>
+
+  <hr>
+
+  <h3>Update Bio Data</h3>
+  <form id="bioForm">
+    <input type="text" id="fullName" placeholder="Full Name" required>
+    <input type="date" id="dob" required>
+    <select id="sex" required>
+      <option value="">Select Sex</option>
+      <option>Male</option>
+      <option>Female</option>
+    </select>
+    <input type="text" id="nationality" placeholder="Nationality" required>
+    <input type="text" id="height" placeholder="Height (cm)" required>
+    <input type="text" id="position" placeholder="Preferred Position" required>
+    <input type="text" id="parentConsent" placeholder="Parent Consent (if minor)">
+    <input type="text" id="phone" placeholder="Phone Number" required>
+    <textarea id="address" placeholder="Contact Address" rows="3" required></textarea>
+    <button type="submit">Save / Update Bio Data</button>
+  </form>
+
+  <hr>
+
+  <h3>Submit New Application</h3>
+  <textarea id="applicationText" placeholder="Describe your application purpose..." required></textarea>
+  <div class="app-actions">
+    <button onclick="submitApplication()">Submit Application</button>
+    <button onclick="submitQuickApplication()">Quick Apply (uses bio summary)</button>
+  </div>
+
+  <hr>
+
+  <h3>Application History & Messages</h3>
+  <div id="applicationsList">Loading applications...</div>
+
+  <div style="text-align:center;margin-top:30px;">
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<!-- ALERT MODAL -->
+<div class="alert" id="alertBox">
+  <h3 id="alertTitle">Riders FC Alert</h3>
+  <p id="alertMsg"></p>
+  <button onclick="closeAlert()">OK</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+/*
+  FINAL FIXES:
+  - Applicant <-> Admin messaging uses ONE canonical path: applicants/{uid}/messages
+  - Applicant page shows admin messages even if admin omits appId
+  - Messages are safely escaped and rendered using DOM methods
+  - No duplicate writes
+*/
+
+const firebaseConfig = {
+  apiKey:"AIzaSyAFsHg9fK6IDnHbuxmBleEfIIfVGsuLDik",
+  authDomain:"profile-b825d.firebaseapp.com",
+  projectId:"profile-b825d",
+  storageBucket:"profile-b825d.firebasestorage.app",
+  messagingSenderId:"925276859161",
+  appId:"1:925276859161:web:194c60f6dbd9f1ef8bf388"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.database();
+let user = null;
+
+function showAlert(t,m){
+  document.getElementById('alertTitle').innerText = t;
+  document.getElementById('alertMsg').innerText = m;
+  document.getElementById('alertBox').style.display = 'block';
+}
+function closeAlert(){ document.getElementById('alertBox').style.display = 'none'; }
+
+/* AUTH */
+auth.onAuthStateChanged(u=>{
+  if(!u){
+    const base = window.location.origin + window.location.pathname.replace(/[^\/]*$/,'');
+    window.location = base + 'riders-apply.html';
+    return;
+  }
+  if(!u.emailVerified){
+    showAlert('Email Not Verified','Please verify your email before proceeding.');
+    auth.signOut();
+    return;
+  }
+  user = u;
+  document.getElementById('welcomeMsg').innerText = `Welcome, ${user.displayName || 'Player'}`;
+  db.ref('applicants/'+user.uid).update({ email:user.email, name:user.displayName||'', lastSeen:Date.now() });
+  loadBio(); loadApplications();
+});
+
+/* LOAD BIO */
+function loadBio(){
+  db.ref('applicants/'+user.uid).on('value', snap=>{
+    const d = snap.val() || {};
+    const bio = d.bio || {};
+
+    document.getElementById('playerInfo').innerHTML = `
+      <div class="info-card"><h4>Personal</h4>
+      <p><b>Name:</b> ${bio.fullName || d.name || ''}</p>
+      <p><b>DOB:</b> ${bio.dob || ''}</p>
+      <p><b>Sex:</b> ${bio.sex || ''}</p></div>
+
+      <div class="info-card"><h4>Contact</h4>
+      <p><b>Phone:</b> ${bio.phone || ''}</p>
+      <p><b>Address:</b> ${bio.address || ''}</p>
+      <p><b>Email:</b> ${d.email || user.email}</p></div>
+
+      <div class="info-card"><h4>Football Profile</h4>
+      <p><b>Nationality:</b> ${bio.nationality || ''}</p>
+      <p><b>Height:</b> ${bio.height || ''} cm</p>
+      <p><b>Position:</b> ${bio.position || ''}</p></div>
+
+      <div class="info-card"><h4>Status</h4>
+      <p><b>Parent Consent:</b> ${bio.parentConsent || 'N/A'}</p>
+      <p><b>Application Status:</b> ${d.status || 'Pending'}</p>
+      <p><b>Last Updated:</b> ${new Date(bio.updated || d.lastSeen || Date.now()).toLocaleString()}</p></div>
+    `;
+
+    // populate form fields
+    if(bio.fullName) document.getElementById('fullName').value = bio.fullName;
+    if(bio.dob) document.getElementById('dob').value = bio.dob;
+    if(bio.sex) document.getElementById('sex').value = bio.sex;
+    if(bio.nationality) document.getElementById('nationality').value = bio.nationality;
+    if(bio.height) document.getElementById('height').value = bio.height;
+    if(bio.position) document.getElementById('position').value = bio.position;
+    if(bio.parentConsent) document.getElementById('parentConsent').value = bio.parentConsent;
+    if(bio.phone) document.getElementById('phone').value = bio.phone;
+    if(bio.address) document.getElementById('address').value = bio.address;
+  });
+}
+
+/* UPDATE BIO */
+document.getElementById('bioForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const bio = {
+    fullName:document.getElementById('fullName').value,
+    dob:document.getElementById('dob').value,
+    sex:document.getElementById('sex').value,
+    nationality:document.getElementById('nationality').value,
+    height:document.getElementById('height').value,
+    position:document.getElementById('position').value,
+    parentConsent:document.getElementById('parentConsent').value,
+    phone:document.getElementById('phone').value,
+    address:document.getElementById('address').value,
+    updated:Date.now()
+  };
+
+  db.ref('applicants/'+user.uid).update({ bio, name:bio.fullName, email:user.email })
+    .then(()=>showAlert('Bio Updated','Your bio information has been updated.'))
+    .catch(err=>showAlert('Error',err.message));
+});
+
+/* SUBMIT APPLICATION */
+function submitApplication(){
+  const text = document.getElementById('applicationText').value.trim();
+  if(!text) return showAlert('Error','Enter your application details.');
+
+  const newApp = db.ref('applications').push();
+  const appId = newApp.key;
+  const data = { uid:user.uid, name:user.displayName||'', email:user.email, message:text, status:'pending', timestamp:Date.now() };
+
+  const updates = {};
+  updates['applications/'+appId] = data;
+  updates['applicants/'+user.uid+'/applications/'+appId] = data;
+  updates['applicants/'+user.uid+'/status'] = 'pending';
+
+  // initial message in canonical messages path
+  const msgId = db.ref().push().key;
+  updates['applicants/'+user.uid+'/messages/'+msgId] = { sender:'user', text, time:Date.now(), appId };
+
+  db.ref().update(updates).then(()=>{
+    showAlert('Application Submitted','Your application was submitted.');
+    document.getElementById('applicationText').value = '';
+  }).catch(err=>showAlert('Error',err.message));
+}
+
+/* QUICK APPLY */
+function submitQuickApplication(){
+  db.ref('applicants/'+user.uid+'/bio').once('value').then(s=>{
+    const b = s.val() || {};
+    const text = `Quick Application — Name: ${b.fullName||''}; Position: ${b.position||'N/A'}; Height: ${b.height||'N/A'}; Phone: ${b.phone||'N/A'}`;
+    document.getElementById('applicationText').value = text;
+    submitApplication();
+  });
+}
+
+/* LOAD APPLICATIONS */
+function loadApplications(){
+  const list = document.getElementById('applicationsList');
+  db.ref('applications').orderByChild('uid').equalTo(user.uid).on('value', snap=>{
+    list.innerHTML = '';
+    if(!snap.exists()){ list.innerHTML = '<p>No applications found.</p>'; return; }
+
+    const arr = [];
+    snap.forEach(s=>arr.push({ ...s.val(), id: s.key }));
+    arr.reverse();
+
+    arr.forEach(a=>{
+      const div = document.createElement('div'); div.className = 'application-card';
+      div.innerHTML = `
+        <p style="white-space:pre-wrap">${escapeHtml(a.message)}</p>
+        <p class="status ${a.status}">Status: ${a.status.toUpperCase()}</p>
+        <div class="message-thread" id="thread_${a.id}">Loading messages...</div>
+        <div class="reply-box">
+          <textarea id="reply_${a.id}" rows="2" placeholder="Type a reply..."></textarea>
+          <button onclick="sendReply('${a.id}')">Send Reply</button>
+        </div>
+      `;
+      list.appendChild(div);
+      loadMessages(a.id);
+    });
+  });
+}
+
+function escapeHtml(t){ if(!t) return ''; return t.replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+
+/* LOAD MESSAGES: show admin messages even if they omit appId */
+function loadMessages(appId){
+  const thread = document.getElementById('thread_'+appId);
+  if(!thread) return;
+
+  db.ref('applicants/'+user.uid+'/messages').on('value', snap=>{
+    thread.innerHTML = '';
+    if(!snap.exists()){ thread.innerHTML = '<p style="text-align:center;color:#777;">No messages yet.</p>'; return; }
+
+    const msgs = [];
+    snap.forEach(s=>{
+      const m = s.val();
+      // include message if it's global admin message (no appId) OR it's targeted to this appId
+      if(!m.appId || m.appId === appId) msgs.push(m);
+    });
+
+    msgs.sort((a,b)=> (a.time||0) - (b.time||0) );
+    if(msgs.length === 0){ thread.innerHTML = '<p style="text-align:center;color:#777;">No messages yet.</p>'; return; }
+
+    msgs.forEach(m=>{
+      const div = document.createElement('div');
+      div.className = 'message ' + (m.sender === 'admin' ? 'admin' : 'user');
+
+      const txt = document.createElement('div'); txt.textContent = m.text || '';
+      const meta = document.createElement('span'); meta.className = 'meta';
+      meta.textContent = (m.sender === 'admin' ? 'Admin' : 'You') + ' • ' + (m.time ? new Date(m.time).toLocaleString() : '');
+
+      div.appendChild(txt);
+      div.appendChild(meta);
+      thread.appendChild(div);
+    });
+
+    thread.scrollTop = thread.scrollHeight;
+  });
+}
+
+/* SEND REPLY */
+function sendReply(appId){
+  const input = document.getElementById('reply_'+appId);
+  const text = input.value.trim(); if(!text) return;
+  const msgId = db.ref().push().key;
+  const msg = { sender:'user', text, time:Date.now(), appId };
+  db.ref('applicants/'+user.uid+'/messages/'+msgId).set(msg).then(()=>{ input.value = ''; }).catch(err=>showAlert('Error',err.message));
+}
+
+/* LOGOUT */
+function logout(){ auth.signOut().then(()=>{ const base = window.location.origin + window.location.pathname.replace(/[^\/]*$/,''); window.location = base + 'riders-apply.html'; }); }
+
+</script>
+
+</body>
+</html>

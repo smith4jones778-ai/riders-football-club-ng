@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About — Riders FC</title>
+
+  <!-- SEO -->
+  <meta name="description" content="Learn about Riders FC — Our history, mission, values, achievements, coaching staff, and our journey to becoming a powerhouse in modern football." />
+  <meta name="keywords" content="Riders FC, About Riders FC, football club history, coaches, mission, achievements" />
+  <meta name="theme-color" content="#004d1a" />
+
+  <!-- OG -->
+  <meta property="og:title" content="About Riders FC" />
+  <meta property="og:description" content="Discover the story, mission and achievements of Riders Football Club." />
+  <meta property="og:image" content="riders-logo.jpg" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="riders-logo.jpg">
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+    body{background:#f5f9f5;color:#111;line-height:1.7;overflow-x:hidden;}
+
+    /* HEADER */
+    header{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:14px 20px;background:#004d1a;color:#fff;position:sticky;top:0;z-index:100;
+      box-shadow:0 6px 20px rgba(0,0,0,0.35);
+    }
+    .logo{display:flex;align-items:center;gap:10px;}
+    .logo img{width:58px;height:58px;border-radius:50%;transition:transform .6s;}
+    .logo img:hover{transform:rotateY(360deg);}
+    .logo h1{font-size:22px;font-weight:900;}
+
+    nav{display:flex;gap:18px;}
+    nav a{
+      padding:10px 18px;text-decoration:none;color:#fff;font-weight:800;
+      background:linear-gradient(180deg,#007a2f,#004d1a);
+      border-radius:10px;box-shadow:0 6px 0 #002f12,0 6px 16px rgba(0,0,0,0.3);
+      transition:.2s;
+    }
+    nav a:hover{transform:translateY(2px);box-shadow:0 3px 0 #002f12,0 3px 8px rgba(0,0,0,0.2);}
+    nav a:active{transform:translateY(6px);box-shadow:none;}
+
+    /* MOVING QUOTE */
+    .moving-quote{
+      width:100%;overflow:hidden;background:#007a2f;color:#fff;
+      padding:10px 0;font-weight:800;font-size:18px;
+      box-shadow:inset 0 -4px 6px rgba(0,0,0,0.2);
+    }
+    .moving-quote span{
+      display:inline-block;white-space:nowrap;padding-left:100%;
+      animation:scrollQuote 25s linear infinite;
+    }
+    @keyframes scrollQuote{
+      0%{transform:translateX(0);}
+      100%{transform:translateX(-100%);}
+    }
+
+    /* HERO */
+    .hero-about{
+      max-width:1200px;width:90%;height:55vh;margin:30px auto;
+      border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.25);
+      border:6px solid #004d1a;position:relative;background:#000;
+    }
+    .hero-about img{
+      width:100%;height:100%;object-fit:cover;filter:brightness(.6);
+    }
+    h2-1{
+      position:absolute;bottom:25px;left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,.55);padding:12px 22px;border-radius:12px;
+      color:#fff;font-size:24px;font-weight:900;box-shadow:0 6px 18px rgba(0,0,0,0.5);
+    }
+
+    /* SECTION */
+    .section{max-width:1100px;margin:60px auto;padding:0 20px;}
+    .section h2{text-align:center;color:#004d1a;font-size:28px;margin-bottom:20px;}
+
+    .text-box{
+      background:#fff;padding:24px;border-radius:14px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.1);
+      font-size:17px;color:#333;
+    }
+
+    /* STAFF GRID */
+    .staff-grid{
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+      gap:24px;margin-top:20px;
+    }
+    .staff-card{
+      background:#fff;padding:20px;border-radius:14px;text-align:center;
+      box-shadow:0 6px 18px rgba(0,0,0,.12);transition:.3s;
+    }
+    .staff-card:hover{transform:translateY(-6px);}
+    .staff-photo{
+      width:140px;height:140px;margin:auto;border-radius:50%;overflow:hidden;
+      border:4px solid #004d1a;box-shadow:0 6px 18px rgba(0,0,0,0.25);
+    }
+    .staff-photo img{width:100%;height:100%;object-fit:cover;}
+    .staff-card h3{margin-top:10px;color:#004d1a;font-weight:800;}
+    .staff-card p{color:#555;font-weight:600;margin-top:6px;}
+
+    /* PLAYER THUMBNAILS */
+    .players-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:22px;margin-top:20px;
+    }
+    .player-card{
+      background:#fff;border-radius:12px;overflow:hidden;
+      box-shadow:0 6px 18px rgba(0,0,0,0.12);transition:.3s;
+      text-decoration:none;color:#111;
+    }
+    .player-card:hover{transform:translateY(-6px);}
+    .player-card img{
+      width:100%;height:260px;object-fit:cover;
+    }
+    .player-card h3{
+      padding:16px;font-size:18px;font-weight:800;color:#004d1a;
+    }
+
+    /* AFFILIATIONS */
+    .affiliates{
+      display:flex;flex-wrap:wrap;justify-content:center;gap:28px;
+      margin-top:25px;
+    }
+    .affiliates div{
+      text-align:center;
+    }
+    .affiliates img{
+      width:70px;height:70px;object-fit:contain;
+      filter:drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+    }
+    .affiliates p{
+      margin-top:6px;color:#004d1a;font-weight:700;
+    }
+
+    /* FOOTER */
+    footer{
+      background:#004d1a;color:#fff;text-align:center;
+      padding:30px 14px;margin-top:80px;
+      box-shadow:0 -6px 16px rgba(0,0,0,0.3);
+    }
+    footer img{width:60px;border-radius:50%;margin-bottom:10px;}
+    .socials{display:flex;justify-content:center;gap:14px;margin-top:10px;}
+    .socials a{
+      width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+      background:rgba(255,255,255,0.1);border-radius:50%;color:#fff;font-weight:700;
+      box-shadow:0 4px 10px rgba(0,0,0,0.3);transition:.2s;text-decoration:none;
+    }
+    .socials a:hover{transform:translateY(-3px);}
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">
+    <img src="riders-logo.jpg" alt="Riders FC Logo">
+    <h1>Riders FC</h1>
+  </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="#staff">Staff</a>
+  </nav>
+</header>
+
+<div class="moving-quote"><span>"Discipline, Determination, and Dedication — The Spirit of Riders FC Moves Forward Relentlessly!"</span></div>
+
+<section class="hero-about">
+  <img src="rider1.jpeg" alt="About Riders FC">
+  <h2-1>About Riders Football Club</h2-1>
+</section>
+
+<!-- REGISTRATION + AFFILIATIONS -->
+<section class="section">
+  <h2>Official Registration & Affiliations</h2>
+
+  <div class="text-box" style="text-align:center;font-size:20px;font-weight:900;color:#004d1a;">
+    Riders FC is a Registered Nigerian Football Club under the Corporate Affairs Commission (CAC).  
+    <br><br>
+    <span style="font-size:34px;font-weight:900;color:#002f12;text-shadow:2px 2px 6px rgba(0,0,0,0.25);">
+      RC: 727970
+    </span>
+  </div>
+
+  <h2 style="margin-top:35px;">Affiliated With</h2>
+
+  <div class="affiliates">
+    <div>
+      <img src="https://newsline.org.ng/img/bg-img/223IMG-20250913-WA0083.jpg" alt="">
+      <p>Niger State FA</p>
+    </div>
+    <div>
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdOH2kZQgpIGRTqLNHKvZy2qBQEeWZMvkAOA&s" alt="">
+      <p>NNL</p>
+    </div>
+    <div>
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRptAGmQJVL128O1akgSfFQchSRHiunW9h1iw&s" alt="">
+      <p>NFA</p>
+    </div>
+    <div>
+      <img src="https://www.arunfoot.com/wp-content/uploads/2018/02/FIFA-TMS-300x300.png" alt="">
+      <p>TMS</p>
+    </div>
+    <div>
+      <img src="https://thenationonlineng.net/wp-content/uploads/2019/09/FIFA-LOGO.jpg" alt="">
+      <p>FIFA Connect</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="history">
+  <h2>Our History</h2>
+  <div class="text-box">
+    <p>
+      Riders FC was founded with a vision to redefine passion-driven football.  
+      Over the years, we have grown into a competitive and unified football team known for discipline, teamwork, and a relentless fighting spirit.  
+      The club has achieved remarkable success at regional and national levels, building a legacy that inspires the next generation of athletes.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="mission">
+  <h2>Mission & Values</h2>
+  <div class="text-box">
+    <p><strong>Our Mission:</strong> To develop talented footballers through discipline, structured training, and a winning mentality while inspiring the community through excellence on and off the pitch.</p>
+    <br>
+    <ul class="achievements-list">
+      <li>Teamwork — We move as one.</li>
+      <li>Discipline — The backbone of our success.</li>
+      <li>Dedication — Consistent effort, every single day.</li>
+      <li>Respect — For teammates, fans, opponents, and the game.</li>
+      <li>Growth — We learn, adapt, and evolve.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="staff">
+  <h2>Management & Coaching Staff</h2>
+
+  <div class="staff-grid">
+    <div class="staff-card">
+      <div class="staff-photo"><img src="coach.jpeg" alt="Head Coach"></div>
+      <h3>Head Coach</h3>
+      <p>Leading with vision, strategy, and strong football philosophy.</p>
+    </div>
+
+    <div class="staff-card">
+      <div class="staff-photo"><img src="photo3.jpeg" alt="Assistant Coach"></div>
+      <h3>Assistant Coach</h3>
+      <p>Supports training, tactics, and player development.</p>
+    </div>
+
+    <div class="staff-card">
+      <div class="staff-photo"><img src="okey.jpg" alt="Team Manager"></div>
+      <h3>Okechukwu Samuel</h3>
+      <p>Chairman Board of Directors / Director of Finance.</p>
+    </div>
+
+    <div class="staff-card">
+      <div class="staff-photo"><img src="marshall.jpeg" alt="Team Manager"></div>
+      <h3>Marshall Jacob</h3>
+      <p>Secretary / Director of Communications and Public Relations.</p>
+    </div>
+
+    <div class="staff-card">
+      <div class="staff-photo"><img src="hassan.png" alt="Team Manager"></div>
+      <h3>Hassan Musa</h3>
+      <p>Financial Secretary / Director of Player Development.</p>
+    </div>
+
+    <div class="staff-card">
+      <div class="staff-photo"><img src="akinola.png" alt="Team Manager"></div>
+      <h3>Akeem Akinola</h3>
+      <p>Director of Operations and Facilities.</p>
+    </div>
+
+    <div class="staff-card">
+      <div class="staff-photo"><img src="owem.jpeg" alt="Team Manager"></div>
+      <h3>Owem Aslem</h3>
+      <p>Director of Events.</p>
+    </div>
+
+    <div class="staff-card">
+      <div class="staff-photo"><img src="yunusa.jpeg" alt="Team Manager"></div>
+      <h3>Yunusa Jubrin</h3>
+      <p>Coordinates logistics, team welfare, and club operations.</p>
+    </div>
+
+    <div class="staff-card">
+      <div class="staff-photo"><img src="tola.jpeg" alt="Team Manager"></div>
+      <h3>Akinremi Akintola</h3>
+      <p>Director of Membership and Community Relations.</p>
+    </div>
+  </div>
+</section>
+
+<!-- OFFICIAL PLAYERS SECTION -->
+<section class="section">
+  <h2>Riders FC Official Players</h2>
+  <h3>Click on each team to explore</h3>
+
+  <div class="players-grid">
+    <a href="#" class="player-card">
+      <img src="https://cdn.businessday.ng/wp-content/uploads/2025/06/KEY-Academy-makes-history-as-first-Nigerian-school-shortlisted-for-worlds-best-school-prize-in-innovation-2-1.png">
+      <h3>Female Team</h3>
+    </a>
+
+    <a href="players.html" class="player-card">
+      <img src="rider1.jpeg">
+      <h3>Meet Senior Team Squad</h3>
+    </a>
+
+    <a href="under.html" class="player-card">
+      <img src="https://cdn.guardian.ng/2025/02/ACT-Sports.jpg">
+      <h3>Meets Our Junior Team</h3>
+    </a>
+
+    <a href="under.html" class="player-card">
+      <img src="https://httacademy.ng/wp-content/uploads/2025/07/1WhatsApp-Image-2025-07-05-at-18.18.33_2642284b-300x225.jpg">
+      <h3>Academy Team</h3>
+    </a>
+  </div>
+</section>
+
+<section class="section" id="stadium">
+  <h2>Our Stadium — Riders Arena</h2>
+  <div class="text-box">
+    <p>
+      Riders Arena is more than a home ground — it is a fortress.  
+      A place where passion meets the roar of loyal supporters.  
+      With modern facilities, excellent turf, and unmatched atmosphere, it stands as a symbol of our pride and resilience.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <img src="riders-logo.jpg" alt="Riders FC Logo">
+  <p>Riders FC — Passion • Teamwork • Glory<br>
+  Email: <a href="mailto:info@ridersfc.com" style="color:#fff;text-decoration:underline;">info@ridersfc.com</a><br>
+  © 2025 Riders Football Club. All Rights Reserved.</p>
+
+  <div class="socials">
+    <a href="https://facebook.com" target="_blank">F</a>
+    <a href="https://instagram.com" target="_blank">I</a>
+    <a href="https://twitter.com" target="_blank">X</a>
+    <a href="https://wa.me/2348102341648" target="_blank">W</a>
+  </div>
+</footer>
+
+</body>
+</html>

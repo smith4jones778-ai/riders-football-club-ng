@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riders FC Admin Dashboard</title>
+    <style>
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f0f4f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            padding: 20px 0;
+            background: #1b1f3b;
+            text-align: center;
+            color: #fff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header img {
+            width: 120px;
+            margin-bottom: 10px;
+        }
+
+        header h1 {
+            font-size: 28px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            padding: 50px 20px;
+        }
+
+        .button-3d {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 220px;
+            height: 80px;
+            background: linear-gradient(145deg, #4caf50, #388e3c);
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 15px;
+            box-shadow: 0 6px #2e7d32;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .button-3d:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px #2e7d32;
+        }
+
+        .button-3d:hover {
+            background: linear-gradient(145deg, #66bb6a, #43a047);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="riders-logo.jpg" alt="Riders FC Logo">
+        <h1>Riders FC Admin Dashboard</h1>
+    </header>
+
+    <main>
+        <a href="players-database-admin.html" class="button-3d">Players Database</a>
+        <a href="riders-admin-applications.html" class="button-3d">Applicant Submission</a>
+        <a href="admin-recent-upcoming-matches.html" class="button-3d">Recent & Upcoming Matches</a>
+        <a href="admin-players-sportlight.html" class="button-3d">Spotlight Update</a>
+        <a href="admin-fans.html" class="button-3d">Fans Post Publish</a>
+    </main>
+
+</body>
+</html>

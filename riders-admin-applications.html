@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Riders FC Admin — Professional Dashboard</title>
+<style>
+body {margin:0; font-family:'Inter',sans-serif; background:#f5f9f5;}
+h2 {text-align:center; color:#004d1a; margin:15px 0;}
+.container {display:flex; max-width:1400px; margin:0 auto; height:90vh; box-shadow:0 4px 20px rgba(0,0,0,0.1);}
+.left-panel {width:360px; background:#fff; overflow-y:auto; border-right:1px solid #ddd;}
+.right-panel {flex:1; padding:20px; display:flex; flex-direction:column;}
+.app-item {padding:12px 16px; cursor:pointer; border-bottom:1px solid #eee; transition:.2s; position:relative;}
+.app-item:hover, .app-item.active {background:#e6f7e6;}
+.app-item .name {font-weight:700;}
+.app-item .email {font-size:13px; color:#555;}
+.app-item .status {font-size:12px; color:#777; margin-top:3px;}
+.app-item .delete-btn {position:absolute; right:10px; top:12px; background:#d9534f; color:#fff; border:none; border-radius:6px; padding:3px 6px; cursor:pointer; font-size:12px; transition:.2s;}
+.app-item .delete-btn:hover {background:#c9302c;}
+.topbar {padding:10px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center; background:#f0f0f0; border-bottom:1px solid #ddd;}
+select,input {padding:8px; border-radius:6px; border:1px solid #ccc; flex:1; min-width:100px;}
+.right-content {flex:1; overflow-y:auto;}
+.bio {background:#f7fdf7; border-radius:10px; padding:12px; margin-bottom:15px;}
+.bio p {margin:4px 0;}
+.message-thread {flex:1; overflow-y:auto; display:flex; flex-direction:column; padding:10px; background:#eef6ee; border-radius:10px;}
+.message {margin:6px 0; padding:10px 14px; border-radius:20px; max-width:70%; display:inline-block; font-size:14px; word-break:break-word; position:relative;}
+.message.admin {background:#004d1a; color:#fff; align-self:flex-start; border-bottom-left-radius:0;}
+.message.user {background:#cde6cd; color:#111; align-self:flex-end; border-bottom-right-radius:0;}
+.message .meta {display:block; font-size:11px; color:rgba(0,0,0,0.6); margin-top:4px;}
+.reply-box {display:flex; gap:10px; margin-top:10px;}
+.reply-box textarea {flex:1; padding:8px; border-radius:12px; border:1px solid #ccc; resize:none;}
+button {background:#004d1a; color:#fff; border:none; border-radius:12px; padding:8px 16px; cursor:pointer; font-weight:700; transition:.2s;}
+button:hover {background:#007a2f;}
+.small {font-size:12px;color:#555;}
+</style>
+</head>
+<body>
+
+<h2>Riders FC Admin — Professional Dashboard</h2>
+
+<div class="container">
+  <div class="left-panel">
+    <div class="topbar">
+      <select id="statusFilter">
+        <option value="all">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="processing">Processing</option>
+        <option value="completed">Completed</option>
+      </select>
+      <input type="text" id="searchBox" placeholder="Search by name or email">
+      <input type="date" id="startDate">
+      <input type="date" id="endDate">
+    </div>
+    <div id="appList">Loading applicants...</div>
+  </div>
+
+  <div class="right-panel">
+    <div class="right-content" id="rightContent">
+      <p style="text-align:center;color:#777;">Select an applicant to view details and chat.</p>
+    </div>
+    <div class="reply-box" id="replyBox" style="display:none;">
+      <textarea id="replyInput" rows="2" placeholder="Type a reply..."></textarea>
+      <select id="statusSelect">
+        <option value="pending">Pending</option>
+        <option value="processing">Processing</option>
+        <option value="completed">Completed</option>
+      </select>
+      <button id="sendBtn">Send</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+// Firebase init
+const firebaseConfig = {
+  apiKey:"AIzaSyAFsHg9fK6IDnHbuxmBleEfIIfVGsuLDik",
+  authDomain:"profile-b825d.firebaseapp.com",
+  projectId:"profile-b825d",
+  storageBucket:"profile-b825d.firebasestorage.app",
+  messagingSenderId:"925276859161",
+  appId:"1:925276859161:web:194c60f6dbd9f1ef8bf388"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let applicants = [], selectedUID = null;
+
+// Load applicants
+function loadApplications() {
+  const filter = document.getElementById('statusFilter').value;
+  const search = document.getElementById('searchBox').value.toLowerCase();
+  db.ref('applicants').once('value').then(snap=>{
+    const list = document.getElementById('appList');
+    list.innerHTML = '';
+    applicants = [];
+    snap.forEach(c=>{
+      const data = c.val(); data.uid = c.key;
+      applicants.push(data);
+    });
+    applicants.reverse();
+    applicants.forEach(a=>{
+      if(filter!=='all' && a.status!==filter) return;
+      if(search && !(a.name?.toLowerCase().includes(search) || a.email?.toLowerCase().includes(search))) return;
+      const div = document.createElement('div'); 
+      div.className='app-item'; div.id = 'app_'+a.uid;
+      div.innerHTML = `<div class="name">${a.name||'Unnamed'}</div>
+                       <div class="email small">${a.email||''}</div>
+                       <div class="status">${a.status||'pending'}</div>
+                       <button class="delete-btn" onclick="deleteApplicant('${a.uid}',event)">Delete</button>`;
+      div.onclick = ()=>selectApplicant(a.uid);
+      list.appendChild(div);
+    });
+  });
+}
+
+// Delete applicant
+function deleteApplicant(uid,event){
+  event.stopPropagation();
+  if(!confirm('Are you sure you want to delete this applicant and all data?')) return;
+  db.ref('applicants/'+uid).remove().then(()=> loadApplications());
+}
+
+// Select applicant
+function selectApplicant(uid){
+  selectedUID = uid;
+  document.querySelectorAll('.app-item').forEach(e=>e.classList.remove('active'));
+  document.getElementById('app_'+uid)?.classList.add('active');
+  renderRightPanel();
+}
+
+// Render right panel
+function renderRightPanel(){
+  const content = document.getElementById('rightContent');
+  const replyBox = document.getElementById('replyBox');
+  if(!selectedUID) return content.innerHTML='<p>Select an applicant.</p>';
+  replyBox.style.display='flex';
+  const a = applicants.find(x=>x.uid===selectedUID);
+  content.innerHTML=`<div class="bio">
+      <h4>Bio</h4>
+      <p><b>Name:</b> ${a.bio?.fullName||a.name||''}</p>
+      <p><b>DOB:</b> ${a.bio?.dob||''}</p>
+      <p><b>Sex:</b> ${a.bio?.sex||''}</p>
+      <p><b>Height:</b> ${a.bio?.height||''} cm</p>
+      <p><b>Position:</b> ${a.bio?.position||''}</p>
+      <p><b>Phone:</b> ${a.bio?.phone||''}</p>
+      <p><b>Nationality:</b> ${a.bio?.nationality||''}</p>
+      <p><b>Address:</b> ${a.bio?.address||''}</p>
+      ${a.bio?.parentConsent?`<p><b>Parent Consent:</b> ${a.bio.parentConsent}</p>`:''}
+    </div>
+    <div class="message-thread" id="messageThread">Loading messages...</div>`;
+  document.getElementById('statusSelect').value = a.status||'pending';
+  loadMessages();
+}
+
+// Load messages
+function loadMessages() {
+  if(!selectedUID) return;
+  const thread = document.getElementById('messageThread');
+  thread.innerHTML='Loading messages...';
+  db.ref('applicants/'+selectedUID+'/messages').on('value', snap=>{
+    thread.innerHTML='';
+    if(!snap.exists()){ thread.innerHTML='<p style="text-align:center;color:#777;">No messages yet.</p>'; return; }
+
+    let msgs = [];
+    snap.forEach(s=>msgs.push(s.val()));
+    msgs.sort((a,b)=> (a.time||0) - (b.time||0));
+
+    const start = document.getElementById('startDate').value ? new Date(document.getElementById('startDate').value).getTime() : 0;
+    const end   = document.getElementById('endDate').value ? new Date(document.getElementById('endDate').value).getTime()+86400000 : Date.now();
+    msgs = msgs.filter(m => m.time>=start && m.time<=end);
+
+    if(msgs.length===0){ thread.innerHTML='<p style="text-align:center;color:#777;">No messages in this date range.</p>'; return; }
+
+    msgs.forEach(m=>{
+      const div = document.createElement('div');
+      div.className='message '+(m.sender==='admin'?'admin':'user');
+      const txt = document.createElement('div'); txt.textContent = m.text||'';
+      const meta = document.createElement('span'); meta.className='meta';
+      meta.textContent = (m.sender==='admin'?'Admin':'Player')+' • '+(m.time?new Date(m.time).toLocaleString():'');
+      div.appendChild(txt); div.appendChild(meta);
+      thread.appendChild(div);
+    });
+    thread.scrollTop = thread.scrollHeight;
+  });
+}
+
+// Send reply
+document.getElementById('sendBtn').onclick = ()=>{
+  const text = document.getElementById('replyInput').value.trim();
+  const status = document.getElementById('statusSelect').value;
+  if(!selectedUID || (!text && !status)) return;
+
+  if(text){
+    const msgRef = db.ref('applicants/'+selectedUID+'/messages').push();
+    msgRef.set({sender:'admin', text, time:Date.now()});
+    document.getElementById('replyInput').value='';
+  }
+  db.ref('applicants/'+selectedUID).update({status});
+  loadApplications();
+}
+
+// Filters
+document.getElementById('statusFilter').onchange = loadApplications;
+document.getElementById('searchBox').oninput = loadApplications;
+document.getElementById('startDate').onchange = loadMessages;
+document.getElementById('endDate').onchange = loadMessages;
+
+// Initial load
+loadApplications();
+</script>
+</body>
+</html>

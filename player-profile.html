@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Riders FC — Player Profile</title>
+<link rel="icon" href="riders-logo.jpg">
+
+<style>
+:root{
+  --green:#004d1a;--accent:#007a2f;--muted:#666;
+  --card-bg:#fff;--bg:#f5f9f5;
+}
+*{box-sizing:border-box;font-family:Inter,system-ui,Arial;color:#111;}
+body{margin:0;background:var(--bg);}
+header{background:var(--green);color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;}
+header a{color:#fff;text-decoration:none;font-weight:900;background:var(--accent);padding:6px 10px;border-radius:8px;}
+.container{max-width:1100px;margin:20px auto;padding:0 16px}
+
+/* HERO SECTION */
+.hero{display:flex;gap:22px;background:#fff;padding:20px;border-radius:14px;box-shadow:0 10px 26px rgba(0,0,0,.08)}
+.left{width:260px;text-align:center}
+.photo{width:220px;height:220px;border-radius:14px;overflow:hidden;border:6px solid var(--green);margin:auto}
+.photo img{width:100%;height:100%;object-fit:cover}
+.left h1{margin:14px 0 4px;color:var(--green);font-size:26px}
+.left p{font-weight:700;color:var(--muted)}
+.value{margin-top:10px;font-size:18px;background:var(--green);color:#fff;padding:8px 14px;border-radius:8px;font-weight:900;display:inline-block}
+
+.right{flex:1}
+.info-grid{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.info-card{background:#fff;padding:10px 12px;border:1px solid #eee;border-radius:10px;min-width:130px;font-weight:900}
+.label{font-size:12px;color:#777}
+
+/* TABS */
+.tabs{display:flex;gap:8px;margin-top:16px}
+.tab-btn{padding:10px 15px;border-radius:8px;border:none;background:#eee;font-weight:900;cursor:pointer}
+.tab-btn.active{background:var(--green);color:#fff}
+.tab-content{background:#fff;padding:20px;margin-top:16px;border-radius:12px;box-shadow:0 12px 28px rgba(0,0,0,.06)}
+
+/* Stat grid */
+.stats{display:flex;flex-wrap:wrap;gap:12px}
+.stat{background:#f8fff8;border:1px solid #e4f7e4;padding:14px;border-radius:10px;min-width:120px;text-align:center;font-weight:900;color:var(--green)}
+
+/* Gallery */
+.gallery{display:flex;gap:10px;flex-wrap:wrap}
+.gallery img{width:150px;height:100px;border-radius:10px;object-fit:cover;border:3px solid var(--green)}
+
+@media(max-width:840px){
+  .hero{flex-direction:column}
+  .left{width:100%}
+  .photo{width:180px;height:180px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h2 style="margin:0;display:flex;align-items:center;gap:10px;">
+    <img src="riders-logo.jpg" style="width:48px;height:48px;border-radius:50%">
+    Riders FC — Player Profile
+  </h2>
+  <a href="players.html">← Back to Players</a>
+</header>
+
+<div class="container">
+
+  <div id="hero" class="hero" style="display:none">
+    <div class="left">
+      <div class="photo"><img id="pPhoto" src=""></div>
+      <h1 id="pName"></h1>
+      <p id="pRole"></p>
+      <span id="pValue" class="value"></span>
+    </div>
+
+    <div class="right">
+      <div id="infoGrid" class="info-grid"></div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="overview">Overview</button>
+        <button class="tab-btn" data-tab="stats">Stats</button>
+        <button class="tab-btn" data-tab="history">Career History</button>
+        <button class="tab-btn" data-tab="media">Media</button>
+      </div>
+
+      <div id="tabContent" class="tab-content">Loading...</div>
+    </div>
+  </div>
+
+  <p id="notFound" style="display:none;text-align:center;color:#777;font-size:22px;margin-top:40px">
+    Player not found.
+  </p>
+
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// CONFIG
+  const firebaseConfig = {
+    apiKey: "AIzaSyB6e3aosFBjX4ulFs5NhdpSY_9XmE0w_kc",
+    authDomain: "website-83a2b.firebaseapp.com",
+    databaseURL: "https://website-83a2b-default-rtdb.firebaseio.com",
+    projectId: "website-83a2b",
+    storageBucket: "website-83a2b.firebasestorage.app",
+    messagingSenderId: "10021438632",
+    appId: "1:10021438632:web:892b3b49af06503ece6e9d"
+  };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// Get id from URL
+const params = new URLSearchParams(location.search);
+const id = params.get("id");
+
+// DOM
+const hero = document.getElementById("hero");
+const notFound = document.getElementById("notFound");
+const tabContent = document.getElementById("tabContent");
+const infoGrid = document.getElementById("infoGrid");
+const pPhoto = document.getElementById("pPhoto");
+const pName = document.getElementById("pName");
+const pRole = document.getElementById("pRole");
+const pValue = document.getElementById("pValue");
+
+if (!id){
+  notFound.style.display="block";
+} else {
+  // realtime listener
+  db.ref("players/"+id).on("value", snap=>{
+    const p = snap.val();
+    if (!p){ notFound.style.display="block"; hero.style.display="none"; return; }
+
+    hero.style.display="flex";
+
+    pPhoto.src = p.photoURL || "default-player.jpg";
+    pName.textContent = p.name || "";
+    pRole.textContent = `${p.position || "Position"} • #${p.jersey || "—"}`;
+    pValue.textContent = "€" + number(p.marketValue);
+
+    infoGrid.innerHTML = "";
+    addInfo("Age", p.age);
+    addInfo("Nationality", p.nationality);
+    addInfo("Height", p.height);
+    addInfo("Weight", p.weight);
+    addInfo("Foot", p.foot);
+    addInfo("Club", p.club);
+    addInfo("Contract Until", p.contractUntil);
+
+    // load default tab
+    showTab("overview", p);
+  });
+}
+
+// Add info card
+function addInfo(label,val){
+  const d = document.createElement("div");
+  d.className="info-card";
+  d.innerHTML = `<div class="label">${label}</div><div>${escape(val||"—")}</div>`;
+  infoGrid.appendChild(d);
+}
+
+// Tabs
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    db.ref("players/"+id).once("value").then(s=>showTab(btn.dataset.tab, s.val()||{}));
+  };
+});
+
+function showTab(tab, p){
+  if (tab==="overview"){
+    tabContent.innerHTML = `
+      <h2 style="color:var(--green);margin-top:0">Overview</h2>
+      <p style="font-weight:700;color:#333">${escape(p.bio || p.description || "No biography entered.")}</p>
+      <hr>
+      <p><strong>Current Club:</strong> ${escape(p.club||"Riders FC")}</p>
+      <p><strong>Contract Until:</strong> ${escape(p.contractUntil||"—")}</p>
+    `;
+  }
+
+  else if (tab==="stats"){
+    tabContent.innerHTML = `
+      <h2 style="color:var(--green)">Performance Stats</h2>
+      <div class="stats">
+        <div class="stat">Apps<br>${p.appearances||0}</div>
+        <div class="stat">Goals<br>${p.goals||0}</div>
+        <div class="stat">Assists<br>${p.assists||0}</div>
+        <div class="stat">Yellow<br>${p.yellow||0}</div>
+        <div class="stat">Red<br>${p.red||0}</div>
+        <div class="stat">Minutes<br>${p.minutes||0}</div>
+      </div>
+    `;
+  }
+
+  else if (tab==="history"){
+    let h = p.careerHistory || [];
+    let out = `<h2 style="color:var(--green)">Career History</h2>`;
+    if (!h.length) out += `<p>No career records entered.</p>`;
+    else {
+      out += `<ul>`;
+      h.forEach(r=>{
+        out += `<li><strong>${escape(r.team||"—")}</strong> (${escape(r.from||"—")} — ${escape(r.to||"—")}) — ${escape(r.notes||"")}</li>`;
+      });
+      out += `</ul>`;
+    }
+    tabContent.innerHTML = out;
+  }
+
+  else if (tab==="media"){
+    const gallery = Array.isArray(p.gallery)?p.gallery:(p.gallery?[p.gallery]:[]);
+    const videos = Array.isArray(p.videos)?p.videos:(p.videos?[p.videos]:[]);
+
+    let html = `<h2 style="color:var(--green)">Media Gallery</h2>`;
+
+    if (!gallery.length) html += `<p>No gallery images uploaded.</p>`;
+    else {
+      html += `<div class="gallery">`;
+      gallery.forEach(url => html += `<img src="${escape(url)}">`);
+      html += `</div>`;
+    }
+
+    html += `<hr><h3>Video Links</h3>`;
+    if (!videos.length) html += `<p>No videos added.</p>`;
+    else {
+      html += `<ul>`;
+      videos.forEach(v => html += `<li><a href="${escape(v)}" target="_blank">${escape(v)}</a></li>`);
+      html += `</ul>`;
+    }
+
+    tabContent.innerHTML = html;
+  }
+}
+
+function number(n){ return Number(n||0).toLocaleString(); }
+function escape(s){ return String(s||"").replace(/[&<>"]/g,c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
+</script>
+
+</body>
+</html>

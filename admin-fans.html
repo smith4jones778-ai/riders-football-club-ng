@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Riders FC Admin — Fan Shoutouts</title>
+
+<style>
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f5f9f5;
+  padding: 30px;
+}
+h2 {
+  text-align: center;
+  color: #004d1a;
+  margin-bottom: 20px;
+}
+#fanList {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.fan-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  position: relative;
+  border-top: 5px solid #004d1a;
+}
+.fan-card p {
+  font-style: italic;
+  color: #333;
+}
+.fan-info {
+  font-weight: 700;
+  color: #004d1a;
+  margin-top: 6px;
+}
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+button {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #fff;
+}
+.approve {background:#007a2f;}
+.delete {background:#d32f2f;}
+.approve:hover {background:#004d1a;}
+.delete:hover {background:#9b1c1c;}
+</style>
+</head>
+<body>
+
+<h2>Admin Panel — Fan Shoutouts</h2>
+<div id="fanList"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAFsHg9fK6IDnHbuxmBleEfIIfVGsuLDik",
+  authDomain: "profile-b825d.firebaseapp.com",
+  projectId: "profile-b825d",
+  storageBucket: "profile-b825d.firebasestorage.app",
+  messagingSenderId: "925276859161",
+  appId: "1:925276859161:web:194c60f6dbd9f1ef8bf388"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const fanList = document.getElementById('fanList');
+
+db.ref('fan_shoutouts').on('value', snap => {
+  fanList.innerHTML = '';
+  if(!snap.exists()) {
+    fanList.innerHTML = '<p style="text-align:center;color:#666;">No shoutouts submitted yet.</p>';
+    return;
+  }
+
+  snap.forEach(child => {
+    const s = child.val();
+    const id = child.key;
+    const card = document.createElement('div');
+    card.className = 'fan-card';
+    card.innerHTML = `
+      <p>"${s.message}"</p>
+      <div class="fan-info">— ${s.name}, ${s.address}<br><small>${s.phone}</small></div>
+      <div class="actions">
+        <button class="approve">${s.approved ? 'Unpublish' : 'Publish'}</button>
+        <button class="delete">Delete</button>
+      </div>
+    `;
+    fanList.appendChild(card);
+
+    // Publish/Unpublish toggle
+    card.querySelector('.approve').onclick = () => {
+      db.ref('fan_shoutouts/'+id).update({approved: !s.approved});
+    };
+    // Delete
+    card.querySelector('.delete').onclick = () => {
+      if(confirm('Delete this shoutout?')) db.ref('fan_shoutouts/'+id).remove();
+    };
+  });
+});
+</script>
+</body>
+</html>

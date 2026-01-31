@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Riders FC Admin — Matches</title>
+<style>
+body{font-family:'Inter',sans-serif;padding:30px;background:#f5f9f5;}
+h2{text-align:center;color:#004d1a;margin-bottom:20px;}
+h3{color:#004d1a;margin-top:30px;}
+form{max-width:500px;margin:20px auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.2);}
+form input, form button{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #ccc;}
+form button{background:#004d1a;color:#fff;font-weight:700;border:none;cursor:pointer;}
+form button:hover{background:#007a2f;}
+
+.list-section{max-width:800px;margin:40px auto;}
+.table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,0.1);}
+.table th,.table td{padding:12px 10px;text-align:left;border-bottom:1px solid #ddd;}
+.table th{background:#004d1a;color:#fff;font-weight:700;}
+.table tr:hover{background:#f0fdf4;}
+.action-btn{padding:6px 10px;border:none;border-radius:6px;font-weight:600;cursor:pointer;margin:0 3px;}
+.edit{background:#007a2f;color:#fff;}
+.delete{background:#c0392b;color:#fff;}
+.reuse{background:#f39c12;color:#fff;}
+</style>
+</head>
+<body>
+<h2>Riders FC Admin Panel — Matches</h2>
+
+<form id="resultForm">
+  <h3>Add / Edit Recent Result</h3>
+  <input type="hidden" id="resId">
+  <input type="date" id="resDate" required>
+  <input type="text" id="resTeam1" placeholder="Team 1" required>
+  <input type="text" id="resScore1" placeholder="Score 1" required>
+  <input type="text" id="resTeam2" placeholder="Team 2" required>
+  <input type="text" id="resScore2" placeholder="Score 2" required>
+  <button type="submit">Save Result</button>
+</form>
+
+<div class="list-section">
+  <h3>Recent Results</h3>
+  <table class="table" id="resultsTable">
+    <thead>
+      <tr><th>Date</th><th>Match</th><th>Score</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<form id="upcomingForm">
+  <h3>Add / Edit Upcoming Match</h3>
+  <input type="hidden" id="upId">
+  <input type="date" id="upDate" required>
+  <input type="text" id="upTeam1" placeholder="Team 1" required>
+  <input type="text" id="upTeam2" placeholder="Team 2" required>
+  <button type="submit">Save Match</button>
+</form>
+
+<div class="list-section">
+  <h3>Upcoming Matches</h3>
+  <table class="table" id="upcomingTable">
+    <thead>
+      <tr><th>Date</th><th>Match</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAFsHg9fK6IDnHbuxmBleEfIIfVGsuLDik",
+  authDomain: "profile-b825d.firebaseapp.com",
+  projectId: "profile-b825d",
+  storageBucket: "profile-b825d.firebasestorage.app",
+  messagingSenderId: "925276859161",
+  appId: "1:925276859161:web:194c60f6dbd9f1ef8bf388"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* ---------- RESULTS ---------- */
+const resForm = document.getElementById('resultForm');
+const resTableBody = document.querySelector('#resultsTable tbody');
+let editingRes = false;
+
+resForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const id = document.getElementById('resId').value;
+  const data = {
+    date: resDate.value,
+    team1: resTeam1.value,
+    score1: resScore1.value,
+    team2: resTeam2.value,
+    score2: resScore2.value
+  };
+  if (id) {
+    db.ref('results/' + id).update(data).then(() => {
+      alert('Result Updated');
+      resForm.reset();
+      document.getElementById('resId').value = '';
+    });
+  } else {
+    db.ref('results').push(data).then(() => {
+      alert('Result Added');
+      resForm.reset();
+    });
+  }
+});
+
+db.ref('results').on('value', snap => {
+  resTableBody.innerHTML = '';
+  snap.forEach(child => {
+    const r = child.val();
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${r.date || ''}</td>
+      <td>${r.team1 || ''} vs ${r.team2 || ''}</td>
+      <td>${r.score1 || ''} - ${r.score2 || ''}</td>
+      <td>
+        <button class="action-btn edit" onclick="editResult('${child.key}','${r.date}','${r.team1}','${r.score1}','${r.team2}','${r.score2}')">Edit</button>
+        <button class="action-btn reuse" onclick="reuseResult('${r.date}','${r.team1}','${r.score1}','${r.team2}','${r.score2}')">Reuse</button>
+        <button class="action-btn delete" onclick="deleteResult('${child.key}')">Delete</button>
+      </td>`;
+    resTableBody.prepend(row);
+  });
+});
+
+function editResult(id,date,team1,score1,team2,score2){
+  resId.value=id;resDate.value=date;resTeam1.value=team1;resScore1.value=score1;resTeam2.value=team2;resScore2.value=score2;
+}
+function reuseResult(date,team1,score1,team2,score2){
+  resForm.reset();
+  resDate.value=date;resTeam1.value=team1;resScore1.value=score1;resTeam2.value=team2;resScore2.value=score2;
+}
+function deleteResult(id){
+  if(confirm('Delete this result?')) db.ref('results/'+id).remove();
+}
+
+/* ---------- UPCOMING ---------- */
+const upForm = document.getElementById('upcomingForm');
+const upTableBody = document.querySelector('#upcomingTable tbody');
+
+upForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const id = upId.value;
+  const data = {
+    date: upDate.value,
+    team1: upTeam1.value,
+    team2: upTeam2.value
+  };
+  if (id) {
+    db.ref('upcoming/' + id).update(data).then(() => {
+      alert('Upcoming Match Updated');
+      upForm.reset();
+      upId.value = '';
+    });
+  } else {
+    db.ref('upcoming').push(data).then(() => {
+      alert('Upcoming Match Added');
+      upForm.reset();
+    });
+  }
+});
+
+db.ref('upcoming').on('value', snap => {
+  upTableBody.innerHTML = '';
+  snap.forEach(child => {
+    const u = child.val();
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${u.date || ''}</td>
+      <td>${u.team1 || ''} vs ${u.team2 || ''}</td>
+      <td>
+        <button class="action-btn edit" onclick="editUpcoming('${child.key}','${u.date}','${u.team1}','${u.team2}')">Edit</button>
+        <button class="action-btn reuse" onclick="reuseUpcoming('${u.date}','${u.team1}','${u.team2}')">Reuse</button>
+        <button class="action-btn delete" onclick="deleteUpcoming('${child.key}')">Delete</button>
+      </td>`;
+    upTableBody.prepend(row);
+  });
+});
+
+function editUpcoming(id,date,team1,team2){
+  upId.value=id;upDate.value=date;upTeam1.value=team1;upTeam2.value=team2;
+}
+function reuseUpcoming(date,team1,team2){
+  upForm.reset();
+  upDate.value=date;upTeam1.value=team1;upTeam2.value=team2;
+}
+function deleteUpcoming(id){
+  if(confirm('Delete this match?')) db.ref('upcoming/'+id).remove();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Riders FC — Application Portal</title>
+<style>
+body{font-family:'Inter',sans-serif;background:#f5f9f5;color:#111;margin:0;padding:0;}
+.container{max-width:460px;margin:60px auto;background:#fff;padding:30px;border-radius:14px;box-shadow:0 8px 25px rgba(0,0,0,0.15);}
+h2{text-align:center;color:#004d1a;margin-bottom:15px;}
+input,select,textarea,button{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #ccc;}
+button{background:#004d1a;color:#fff;font-weight:700;border:none;cursor:pointer;transition:0.3s;}
+button:hover{background:#007a2f;}
+.toggle{text-align:center;margin-top:10px;}
+.toggle a{color:#004d1a;text-decoration:none;font-weight:700;}
+.toggle a:hover{text-decoration:underline;}
+.alert{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:#fff;padding:20px 30px;border-radius:12px;box-shadow:0 8px 25px rgba(0,0,0,0.4);
+  z-index:999;display:none;text-align:center;
+}
+.alert h3{color:#004d1a;margin-bottom:10px;}
+.alert button{background:#004d1a;color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;}
+.logo-area{text-align:center;margin-bottom:20px;}
+.logo-area img{width:80px;border-radius:50%;box-shadow:0 4px 10px rgba(0,0,0,0.25);}
+fieldset{border:1px solid #007a2f;border-radius:10px;padding:10px 15px;margin-top:12px;}
+legend{color:#004d1a;font-weight:700;}
+</style>
+</head>
+<body>
+
+<div class="container" id="authBox">
+  <div class="logo-area"><img src="riders-logo.jpg" alt="Riders FC Logo"></div>
+  <h2>Riders FC Application Portal</h2>
+
+  <!-- SIGN UP -->
+  <div id="signupBox" style="display:none;">
+    <input type="text" id="regName" placeholder="Full Name" required>
+    <input type="email" id="regEmail" placeholder="Email Address" required>
+    <input type="password" id="regPass" placeholder="Password" required>
+
+    <fieldset>
+      <legend>Player Bio Data</legend>
+      <input type="date" id="dob" placeholder="Date of Birth" required>
+      <select id="sex" required>
+        <option value="">Select Sex</option>
+        <option>Male</option>
+        <option>Female</option>
+      </select>
+      <input type="text" id="nationality" placeholder="Nationality" required>
+      <input type="text" id="height" placeholder="Height (cm)" required>
+      <input type="text" id="position" placeholder="Preferred Position" required>
+      <input type="text" id="parentConsent" placeholder="Parent Consent (if minor)">
+      <input type="text" id="phone" placeholder="Phone Number" required>
+      <textarea id="address" placeholder="Contact Address" rows="3" required></textarea>
+    </fieldset>
+
+    <button onclick="register()">Create Account</button>
+    <div class="toggle">
+      <a href="#" onclick="showLogin()">Already have an account? Login</a>
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="loginBox">
+    <input type="email" id="loginEmail" placeholder="Email Address" required>
+    <input type="password" id="loginPass" placeholder="Password" required>
+    <button onclick="login()">Login</button>
+    <div class="toggle">
+      <a href="#" onclick="showSignup()">Create Account</a> |
+      <a href="#" onclick="resetPassword()">Forgot Password?</a>
+    </div>
+  </div>
+</div>
+
+<!-- ALERT MODAL -->
+<div class="alert" id="alertBox">
+  <h3 id="alertTitle">Riders FC Alert</h3>
+  <p id="alertMsg"></p>
+  <button onclick="closeAlert()">OK</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig={
+  apiKey:"AIzaSyAFsHg9fK6IDnHbuxmBleEfIIfVGsuLDik",
+  authDomain:"profile-b825d.firebaseapp.com",
+  projectId:"profile-b825d",
+  storageBucket:"profile-b825d.firebasestorage.app",
+  messagingSenderId:"925276859161",
+  appId:"1:925276859161:web:194c60f6dbd9f1ef8bf388"
+};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.database();
+
+// ALERT HANDLERS
+function showAlert(title,msg){
+  document.getElementById('alertTitle').innerText=title;
+  document.getElementById('alertMsg').innerText=msg;
+  document.getElementById('alertBox').style.display='block';
+}
+function closeAlert(){document.getElementById('alertBox').style.display='none';}
+
+// SWITCH PANELS
+function showSignup(){
+  document.getElementById('loginBox').style.display='none';
+  document.getElementById('signupBox').style.display='block';
+}
+function showLogin(){
+  document.getElementById('signupBox').style.display='none';
+  document.getElementById('loginBox').style.display='block';
+}
+
+// REGISTER NEW PLAYER + BIO
+function register(){
+  const name=document.getElementById('regName').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const pass=document.getElementById('regPass').value.trim();
+
+  if(!name||!email||!pass) return showAlert('Error','Please fill in all required fields.');
+
+  const bio={
+    dob:document.getElementById('dob').value,
+    sex:document.getElementById('sex').value,
+    nationality:document.getElementById('nationality').value,
+    height:document.getElementById('height').value,
+    position:document.getElementById('position').value,
+    parentConsent:document.getElementById('parentConsent').value,
+    phone:document.getElementById('phone').value,
+    address:document.getElementById('address').value
+  };
+
+  for(let key in bio){
+    if(!bio[key] && key!=='parentConsent') return showAlert('Error','Please complete your bio data.');
+  }
+
+  auth.createUserWithEmailAndPassword(email,pass)
+  .then(cred=>{
+    cred.user.updateProfile({displayName:name});
+    cred.user.sendEmailVerification();
+
+    const playerData={
+      name,email,
+      bio,
+      status:'pending',
+      created:Date.now()
+    };
+    db.ref('applicants/'+cred.user.uid).set(playerData)
+    .then(()=>{
+      showAlert('Account Created','Welcome '+name+'! Please check your email to verify before login.');
+      showLogin();
+    });
+  })
+  .catch(e=>showAlert('Registration Failed',e.message));
+}
+
+// LOGIN USER
+function login(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value.trim();
+  if(!email||!pass) return showAlert('Error','Please fill in your email and password.');
+
+  auth.signInWithEmailAndPassword(email,pass)
+  .then(cred=>{
+    if(!cred.user.emailVerified){
+      showAlert('Email Not Verified','Please verify your email before accessing your dashboard.');
+      auth.signOut();
+      return;
+    }
+    const baseURL=window.location.origin + window.location.pathname.replace(/[^\/]*$/,'');
+    window.location=baseURL+'riders-dashboard.html';
+  })
+  .catch(e=>showAlert('Login Failed',e.message));
+}
+
+// RESET PASSWORD
+function resetPassword(){
+  const email=prompt('Enter your registered email for password reset:');
+  if(!email) return;
+  auth.sendPasswordResetEmail(email)
+  .then(()=>showAlert('Password Reset','A secure password reset link has been sent to '+email+' via Riders FC mail system.'))
+  .catch(e=>showAlert('Reset Failed',e.message));
+}
+
+// AUTO REDIRECT IF LOGGED IN
+auth.onAuthStateChanged(user=>{
+  if(user && user.emailVerified){
+    const baseURL=window.location.origin + window.location.pathname.replace(/[^\/]*$/,'');
+    window.location=baseURL+'riders-dashboard.html';
+  }
+});
+</script>
+</body>
+</html>

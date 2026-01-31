@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Elite Football Match Tracker – Admin</title>
+
+<style>
+:root{
+  --green1:#2e8b57;--green2:#1f5f3a;
+  --line:rgba(255,255,255,.2);
+  --panel:rgba(0,0,0,.45);
+  --home:#4dd0e1;--away:#ff9f43;
+  --danger:#ff4d4d;--warn:#ffd34d;
+}
+body{margin:0;background:#071a10;color:#fff;font-family:system-ui}
+.container{max-width:1400px;margin:auto;padding:14px}
+header{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+.team{background:var(--panel);padding:10px;border-radius:8px;text-align:center}
+.team input{width:120px;margin-bottom:4px}
+.score{font-size:32px;font-weight:700}
+.timer{background:var(--panel);padding:10px;border-radius:8px;text-align:center}
+.main{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-top:14px}
+
+.pitch{
+ position:relative;height:520px;
+ background:linear-gradient(90deg,var(--green1),var(--green2));
+ border-radius:14px;cursor:crosshair
+}
+.pitch:before{content:"";position:absolute;inset:14px;border:2px solid var(--line)}
+.mid{position:absolute;left:50%;top:14px;bottom:14px;width:2px;background:var(--line)}
+.circle{position:absolute;left:50%;top:50%;width:120px;height:120px;border:2px solid var(--line);border-radius:50%;transform:translate(-50%,-50%)}
+.pen{position:absolute;top:50%;width:140px;height:260px;border:2px solid var(--line);transform:translateY(-50%)}
+.pen.l{left:14px}.pen.r{right:14px}
+.goal{position:absolute;top:50%;width:14px;height:120px;background:var(--line);transform:translateY(-50%)}
+.goal.l{left:0}.goal.r{right:0}
+
+.marker{position:absolute;width:16px;height:16px;border-radius:50%;transform:translate(-50%,-50%)}
+.marker.home{background:var(--home);box-shadow:0 0 10px var(--home)}
+.marker.away{background:var(--away);box-shadow:0 0 10px var(--away)}
+
+.label{position:absolute;transform:translate(-50%,-50%);font-size:11px;background:rgba(0,0,0,.8);padding:4px 6px;border-radius:6px;white-space:nowrap}
+.arrow{position:absolute;height:3px;background:linear-gradient(to right,#fff,transparent);transform-origin:left center;animation:flow 1s linear infinite}
+@keyframes flow{to{background-position:40px}}
+
+.panel{background:var(--panel);padding:12px;border-radius:10px}
+.actions{display:flex;flex-wrap:wrap;gap:6px}
+button{border:0;border-radius:6px;padding:6px 8px;font-weight:600;cursor:pointer}
+button:disabled{opacity:.4}
+.danger{background:var(--danger)}.warn{background:var(--warn)}
+.events{max-height:220px;overflow:auto;font-size:12px}
+.event{border-bottom:1px dashed rgba(255,255,255,.2);padding:4px}
+.alert{background:#000;padding:8px;border-left:4px solid #00ff99;margin-bottom:6px;font-size:12px}
+@media(max-width:900px){.main{grid-template-columns:1fr}}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+<h2>Elite Football Match Tracker – Admin</h2>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<div class="team">
+<input id="homeName" placeholder="HOME">
+<input id="homeLogo" placeholder="Logo URL">
+<div class="score" id="homeScore">0</div>
+</div>
+<div class="timer">
+<div id="halfLabel">NOT STARTED</div>
+<div id="time">00:00</div>
+</div>
+<div class="team">
+<input id="awayName" placeholder="AWAY">
+<input id="awayLogo" placeholder="Logo URL">
+<div class="score" id="awayScore">0</div>
+</div>
+<button id="saveTeams">Save Teams</button>
+<select id="fixtureSelect"></select>
+<button id="newFixture">New</button>
+<button id="deleteFixture" class="danger">Delete</button>
+</div>
+</header>
+
+<div class="main">
+<div class="pitch" id="pitch">
+<div class="mid"></div><div class="circle"></div>
+<div class="pen l"></div><div class="pen r"></div>
+<div class="goal l"></div><div class="goal r"></div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<div class="panel">
+<button id="h1">Start 1st Half</button>
+<button id="h2">Start 2nd Half</button>
+<button id="pause">Pause</button>
+<button id="reset">Reset</button>
+</div>
+
+<div class="panel">
+<button id="th">HOME</button>
+<button id="ta">AWAY</button>
+</div>
+
+<div class="panel">
+<div class="actions">
+<button data-a="attack">Attack</button>
+<button data-a="danger">Dangerous Attack</button>
+<button data-a="shot">Shot</button>
+<button data-a="shot_on_target">Shot on Target</button>
+<button data-a="goal" class="danger">Goal</button>
+<button data-a="goalkick">Goal Kick</button>
+<button data-a="penalty">Penalty</button>
+<button data-a="corner">Corner</button>
+<button data-a="freekick">Free Kick</button>
+<button data-a="throw">Throw-in</button>
+<button data-a="yellow" class="warn">Yellow</button>
+<button data-a="red" class="danger">Red</button>
+<button data-a="var">VAR</button>
+<button data-a="sub">Substitution</button>
+<button data-a="injury">Injury</button>
+</div>
+</div>
+
+<div class="panel">
+<div id="alerts"></div>
+<div class="events" id="events"></div>
+</div>
+</div>
+</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+firebase.initializeApp({
+apiKey:"AIzaSyB-BUuIs7VCzeZgGXziqsAk-zr7UarRp4c",
+databaseURL:"https://survey-d97e7-default-rtdb.firebaseio.com"
+});
+const db=firebase.database();
+
+let fid=null,team=null,pos=null,run=false,half=0,sec=0,timer=null;
+const pitch=document.getElementById("pitch");
+const eventsBox=document.getElementById("events");
+const alerts=document.getElementById("alerts");
+
+function alertMsg(t){
+const d=document.createElement("div");
+d.className="alert";d.textContent=t;
+alerts.prepend(d);setTimeout(()=>d.remove(),4000);
+}
+
+function pad(n){return String(n).padStart(2,"0")}
+function goalX(t){return t==="home"?pitch.clientWidth-20:20}
+function clearPitch(){pitch.querySelectorAll(".marker,.label,.arrow").forEach(e=>e.remove())}
+
+function draw(ev){
+clearPitch();
+if(!ev.x)return;
+const m=document.createElement("div");
+m.className="marker "+ev.team;
+m.style.left=ev.x+"px";m.style.top=ev.y+"px";
+pitch.appendChild(m);
+
+const l=document.createElement("div");
+l.className="label";
+l.textContent=ev.team.toUpperCase()+" – "+ev.action.replaceAll("_"," ");
+l.style.left=ev.x+"px";l.style.top=ev.y+"px";
+pitch.appendChild(l);
+
+const dx=goalX(ev.team)-ev.x;
+const dy=(pitch.clientHeight/2)-ev.y;
+const len=Math.hypot(dx,dy);
+const ang=Math.atan2(dy,dx)*180/Math.PI;
+const a=document.createElement("div");
+a.className="arrow";
+a.style.left=ev.x+"px";a.style.top=ev.y+"px";
+a.style.width=len+"px";
+a.style.transform="rotate("+ang+"deg)";
+pitch.appendChild(a);
+}
+
+pitch.onclick=e=>{
+if(!run||!team)return;
+const r=pitch.getBoundingClientRect();
+pos={x:e.clientX-r.left,y:e.clientY-r.top};
+clearPitch();
+const m=document.createElement("div");
+m.className="marker "+team;
+m.style.left=pos.x+"px";m.style.top=pos.y+"px";
+pitch.appendChild(m);
+};
+
+document.querySelectorAll("[data-a]").forEach(b=>{
+b.onclick=()=>{
+if(b.dataset.a!=="var" && (!pos||!team)){alertMsg("Select position and team");return;}
+if(b.dataset.a==="var"){
+db.ref("fixtures/"+fid+"/lastGoal").once("value",s=>{
+const g=s.val();if(!g)return;
+db.ref("fixtures/"+fid+"/score/"+g.team).transaction(v=>Math.max((v||0)-1,0));
+db.ref("fixtures/"+fid+"/events/"+g.key).remove();
+alertMsg("VAR: Goal cancelled");
+});
+return;
+}
+const ev={team,action:b.dataset.a,x:pos.x,y:pos.y,half,time:pad(Math.floor(sec/60))+":"+pad(sec%60)};
+const ref=db.ref("fixtures/"+fid+"/events").push();
+ref.set(ev);
+db.ref("fixtures/"+fid+"/lastEvent").set(ev);
+if(ev.action==="goal"){
+db.ref("fixtures/"+fid+"/score/"+team).transaction(v=>(v||0)+1);
+db.ref("fixtures/"+fid+"/lastGoal").set({...ev,key:ref.key});
+}
+alertMsg("Action saved: "+ev.action);
+pos=null;
+};
+});
+
+function tick(){
+clearInterval(timer);
+timer=setInterval(()=>{
+if(!run)return;
+sec++;
+document.getElementById("time").textContent=pad(Math.floor(sec/60))+":"+pad(sec%60);
+db.ref("fixtures/"+fid+"/timer").set({half,sec,run});
+},1000);
+}
+
+document.getElementById("h1").onclick=()=>{half=1;sec=0;run=true;tick()}
+document.getElementById("h2").onclick=()=>{half=2;sec=2700;run=true;tick()}
+document.getElementById("pause").onclick=()=>{run=false;alertMsg("Timer paused")}
+document.getElementById("reset").onclick=()=>{
+db.ref("fixtures/"+fid).update({events:null,score:{home:0,away:0},timer:{half:0,sec:0,run:false}});
+alertMsg("Match reset");
+}
+
+document.getElementById("th").onclick=()=>team="home";
+document.getElementById("ta").onclick=()=>team="away";
+
+function loadFixtures(){
+db.ref("fixtures").on("value",s=>{
+fixtureSelect.innerHTML="";
+Object.keys(s.val()||{}).forEach(k=>{
+const o=document.createElement("option");
+o.value=k;o.textContent=k;
+fixtureSelect.appendChild(o);
+});
+if(!fid&&fixtureSelect.value)load(fixtureSelect.value);
+});
+}
+
+function load(id){
+fid=id;
+db.ref("fixtures/"+fid).on("value",s=>{
+const d=s.val();if(!d)return;
+homeScore.textContent=d.score?.home||0;
+awayScore.textContent=d.score?.away||0;
+homeName.value=d.teams?.home||"";
+awayName.value=d.teams?.away||"";
+homeLogo.value=d.teams?.homeLogo||"";
+awayLogo.value=d.teams?.awayLogo||"";
+eventsBox.innerHTML="";
+clearPitch();
+if(d.events){
+Object.values(d.events).forEach(ev=>{
+draw(ev);
+const e=document.createElement("div");
+e.className="event";
+e.textContent="["+ev.time+"] "+ev.team.toUpperCase()+" "+ev.action;
+eventsBox.prepend(e);
+});
+}
+if(d.timer){
+half=d.timer.half;sec=d.timer.sec;run=d.timer.run;
+document.getElementById("halfLabel").textContent=half?half===1?"1ST HALF":"2ND HALF":"NOT STARTED";
+document.getElementById("time").textContent=pad(Math.floor(sec/60))+":"+pad(sec%60);
+if(run)tick();
+}
+});
+}
+
+document.getElementById("newFixture").onclick=()=>{
+if(!homeName.value||!awayName.value){alertMsg("Enter team names");return;}
+const id=homeName.value+" vs "+awayName.value;
+db.ref("fixtures/"+id).set({
+teams:{home:homeName.value,away:awayName.value,homeLogo:homeLogo.value,awayLogo:awayLogo.value},
+score:{home:0,away:0},
+timer:{half:0,sec:0,run:false}
+});
+alertMsg("Fixture created");
+};
+
+document.getElementById("deleteFixture").onclick=()=>{
+if(fid&&confirm("Delete fixture?")){
+db.ref("fixtures/"+fid).remove();
+alertMsg("Fixture deleted");
+}
+};
+
+document.getElementById("saveTeams").onclick=()=>{
+db.ref("fixtures/"+fid+"/teams").set({
+home:homeName.value,away:awayName.value,
+homeLogo:homeLogo.value,awayLogo:awayLogo.value
+});
+alertMsg("Teams saved");
+};
+
+fixtureSelect.onchange=()=>load(fixtureSelect.value);
+loadFixtures();
+</script>
+</body>
+</html>

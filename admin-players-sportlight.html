@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Riders FC Admin — Players</title>
+
+<style>
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f5f9f5;
+  padding: 30px;
+}
+h2 {
+  text-align: center;
+  color: #004d1a;
+  margin-bottom: 20px;
+}
+form {
+  max-width: 500px;
+  margin: 20px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+form input, form button {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+form button {
+  background: #004d1a;
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+}
+form button:hover {
+  background: #007a2f;
+}
+#playersList {
+  max-width: 1000px;
+  margin: 40px auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+.player-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.1);
+  text-align: center;
+  padding: 20px 16px;
+  position: relative;
+  transition: all .3s ease;
+  transform-style: preserve-3d;
+}
+.player-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 12px 26px rgba(0,77,26,0.25);
+}
+.player-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+  overflow: hidden;
+  border: 4px solid #004d1a;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.player-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.player-card h3 {
+  font-size: 20px;
+  color: #004d1a;
+  margin-top: 8px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+.player-card p {
+  margin: 4px 0;
+  color: #333;
+  font-weight: 600;
+}
+.player-stats {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #007a2f;
+  font-weight: 700;
+}
+.card-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+}
+.card-actions button {
+  padding: 4px 8px;
+  font-size: 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.card-actions .edit {
+  background: #007a2f;
+  color: #fff;
+}
+.card-actions .delete {
+  background: #d32f2f;
+  color: #fff;
+}
+.card-actions .edit:hover {background:#004d1a;}
+.card-actions .delete:hover {background:#9b1c1c;}
+</style>
+</head>
+<body>
+
+<h2>Admin Panel — Team Spotlight</h2>
+
+<form id="playerForm">
+  <h3 id="formTitle">Add New Player</h3>
+  <input type="text" id="playerName" placeholder="Player Name" required>
+  <input type="text" id="playerPosition" placeholder="Position" required>
+  <input type="number" id="playerGoals" placeholder="Goals" min="0">
+  <input type="number" id="playerAssists" placeholder="Assists" min="0">
+  <input type="url" id="playerPhotoURL" placeholder="Image URL (direct link)">
+  <button type="submit">Save Player</button>
+</form>
+
+<div id="playersList"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAFsHg9fK6IDnHbuxmBleEfIIfVGsuLDik",
+  authDomain: "profile-b825d.firebaseapp.com",
+  projectId: "profile-b825d",
+  storageBucket: "profile-b825d.firebasestorage.app",
+  messagingSenderId: "925276859161",
+  appId: "1:925276859161:web:194c60f6dbd9f1ef8bf388"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let editId = null;
+
+const playerForm = document.getElementById('playerForm');
+const playersList = document.getElementById('playersList');
+const formTitle = document.getElementById('formTitle');
+
+function resetForm() {
+  playerForm.reset();
+  editId = null;
+  formTitle.textContent = "Add New Player";
+}
+
+playerForm.addEventListener('submit', e => {
+  e.preventDefault();
+
+  let name = document.getElementById('playerName').value;
+  let position = document.getElementById('playerPosition').value;
+  let goals = document.getElementById('playerGoals').value || 0;
+  let assists = document.getElementById('playerAssists').value || 0;
+  let photoURL = document.getElementById('playerPhotoURL').value || '';
+
+  const playerData = {name, position, goals, assists, photoURL};
+
+  if(editId) {
+    db.ref(`players/${editId}`).update(playerData)
+      .then(()=>{alert('Player updated successfully'); resetForm();});
+  } else {
+    db.ref('players').push(playerData)
+      .then(()=>{alert('Player added successfully'); resetForm();});
+  }
+});
+
+function renderPlayers(snapshot) {
+  playersList.innerHTML = '';
+  if(!snapshot.exists()) {
+    playersList.innerHTML = '<p style="text-align:center;color:#666;">No players added yet.</p>';
+    return;
+  }
+
+  snapshot.forEach(child => {
+    const p = child.val();
+    const id = child.key;
+    const card = document.createElement('div');
+    card.className = 'player-card';
+    card.innerHTML = `
+      <div class="player-photo"><img src="${p.photoURL||'default-player.jpg'}" alt="${p.name||'Player'}"></div>
+      <h3>${p.name||'Unnamed'}</h3>
+      <p>${p.position||'Unknown'}</p>
+      <div class="player-stats">⚽ Goals: ${p.goals||0} • 🎯 Assists: ${p.assists||0}</div>
+      <div class="card-actions">
+        <button class="edit">Edit</button>
+        <button class="delete">Delete</button>
+      </div>
+    `;
+    playersList.appendChild(card);
+
+    // Edit button
+    card.querySelector('.edit').onclick = () => {
+      document.getElementById('playerName').value = p.name;
+      document.getElementById('playerPosition').value = p.position;
+      document.getElementById('playerGoals').value = p.goals;
+      document.getElementById('playerAssists').value = p.assists;
+      document.getElementById('playerPhotoURL').value = p.photoURL || '';
+      editId = id;
+      formTitle.textContent = "Edit Player";
+    }
+
+    // Delete button
+    card.querySelector('.delete').onclick = () => {
+      if(confirm('Are you sure you want to delete this player?')) {
+        db.ref(`players/${id}`).remove();
+      }
+    }
+  });
+}
+
+db.ref('players').on('value', renderPlayers);
+</script>
+
+</body>
+</html>

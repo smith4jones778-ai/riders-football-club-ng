@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Riders FC — Admin (Players)</title>
+  <meta name="robots" content="noindex,nofollow">
+  <style>
+    :root{--green:#004d1a;--accent:#007a2f;--bg:#f7faf7;--card:#fff}
+    *{box-sizing:border-box;font-family:Inter,system-ui,Arial}
+    body{margin:0;background:var(--bg);color:#111}
+    header{background:var(--green);color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
+    header h1{font-size:18px;margin:0}
+    .container{max-width:1200px;margin:28px auto;padding:0 20px}
+    .grid{display:grid;grid-template-columns:1fr 460px;gap:18px}
+    .panel{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.08)}
+    form label{display:block;margin-top:10px;font-weight:800}
+    form input[type="text"], form input[type="number"], form textarea, form select{
+      width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;margin-top:6px;font-weight:700
+    }
+    form textarea{min-height:90px;resize:vertical}
+    .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+    .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:900}
+    .btn-primary{background:var(--accent);color:#fff}
+    .btn-danger{background:#ef4444;color:#fff}
+    .btn-light{background:#f4f4f4;color:#222}
+    .list{max-height:640px;overflow:auto;margin-top:12px}
+    .player-row{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;border:1px solid #f0f0f0;margin-bottom:8px;background:#fff;cursor:pointer}
+    .player-row img{width:56px;height:56px;border-radius:8px;object-fit:cover}
+    .player-row .meta{flex:1}
+    .player-row .meta h4{margin:0;color:var(--green)}
+    .player-row .meta p{margin:6px 0;color:#666}
+    .small{font-size:13px;color:#666}
+    .toggle{display:inline-flex;align-items:center;gap:8px}
+    .published{background:#e6fff0;border-left:4px solid var(--accent);padding:8px;border-radius:8px}
+    .unpublished{background:#fff0f0;border-left:4px solid #ef4444;padding:8px;border-radius:8px}
+    footer{max-width:1200px;margin:20px auto;padding:0 20px;color:#666;font-size:13px}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+    /* repeaters */
+    .repeat-group{background:#fafafa;border:1px solid #eee;padding:12px;border-radius:10px;margin-top:10px}
+    .repeat-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:8px;align-items:center}
+    .repeat-row > div{display:flex;flex-direction:column}
+    .inline-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    .small-muted{font-size:12px;color:#666;margin-top:6px}
+    .muted{color:#666}
+  </style>
+</head>
+<body>
+<header>
+  <h1>Riders FC Admin — Players</h1>
+  <div>
+    <a href="players.html" style="color:#fff;text-decoration:none;font-weight:900;background:linear-gradient(180deg,var(--accent),var(--green));padding:8px 12px;border-radius:8px;box-shadow:0 6px 0 #002f12">Open Players</a>
+  </div>
+</header>
+
+<main class="container">
+  <div class="grid">
+    <!-- left: list and actions -->
+    <div class="panel">
+      <h2 style="margin-top:0">Players</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="searchList" placeholder="Search existing players..." style="flex:1;padding:10px;border-radius:8px;border:1px solid #ddd;font-weight:800">
+        <button id="newBtn" class="btn btn-primary">New Player</button>
+      </div>
+
+      <div class="list" id="playersList">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- right: create/edit form -->
+    <div class="panel">
+      <h2 id="formTitle">Create / Edit Player</h2>
+
+      <form id="playerForm">
+        <input type="hidden" id="playerId">
+
+        <label>Name</label>
+        <input id="name" type="text" required placeholder="Full name">
+
+        <label>Position</label>
+        <select id="position">
+          <option value="">Select position</option>
+          <option>Goalkeeper</option><option>Defender</option><option>Midfielder</option><option>Forward</option>
+        </select>
+
+        <label>Jersey #</label>
+        <input id="jersey" type="number" min="1" placeholder="e.g. 10">
+
+        <label>Nationality</label>
+        <input id="nationality" type="text" placeholder="Country">
+
+        <label>Current Club</label>
+        <input id="club" type="text" placeholder="Club name">
+
+        <label>Contract Until</label>
+        <input id="contractUntil" type="text" placeholder="e.g. 2026-06-30">
+
+        <label>Age</label>
+        <input id="age" type="number" min="15">
+
+        <label>Height (cm)</label>
+        <input id="height" type="text" placeholder="e.g. 182">
+
+        <label>Weight (kg)</label>
+        <input id="weight" type="text" placeholder="e.g. 76">
+
+        <label>Preferred Foot</label>
+        <input id="foot" type="text" placeholder="Left / Right">
+
+        <label>Market Value (number in €)</label>
+        <input id="marketValue" type="number" placeholder="e.g. 1250000">
+
+        <label>Photo URL (main)</label>
+        <input id="photoURL" type="text" placeholder="https://...jpg">
+
+        <!-- GALLERY REPEATER -->
+        <label>Gallery Images</label>
+        <div id="galleryBox" class="repeat-group"></div>
+        <button type="button" id="addGallery" class="btn btn-light" style="margin-top:8px;width:100%">+ Add Gallery Image</button>
+
+        <!-- VIDEO REPEATER -->
+        <label style="margin-top:14px">Videos</label>
+        <div id="videoBox" class="repeat-group"></div>
+        <button type="button" id="addVideo" class="btn btn-light" style="margin-top:8px;width:100%">+ Add Video Link</button>
+
+        <!-- CAREER HISTORY -->
+        <label style="margin-top:14px">Career History</label>
+        <div id="historyBox" class="repeat-group"></div>
+        <button type="button" id="addHistory" class="btn btn-light" style="margin-top:8px;width:100%">+ Add Career Row</button>
+
+        <!-- STATS -->
+        <label style="margin-top:18px">Stats</label>
+        <div class="inline-3">
+          <div>
+            <small class="muted">Appearances</small>
+            <input id="statApps" type="number" placeholder="0">
+          </div>
+          <div>
+            <small class="muted">Goals</small>
+            <input id="statGoals" type="number" placeholder="0">
+          </div>
+          <div>
+            <small class="muted">Assists</small>
+            <input id="statAssists" type="number" placeholder="0">
+          </div>
+        </div>
+        <div class="inline-3" style="margin-top:8px">
+          <div>
+            <small class="muted">Minutes</small>
+            <input id="statMinutes" type="number" placeholder="0">
+          </div>
+          <div>
+            <small class="muted">Yellow</small>
+            <input id="statYellow" type="number" placeholder="0">
+          </div>
+          <div>
+            <small class="muted">Red</small>
+            <input id="statRed" type="number" placeholder="0">
+          </div>
+        </div>
+
+        <label style="margin-top:18px">Short Bio</label>
+        <textarea id="bio" placeholder="Short summary / scouting note"></textarea>
+
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+          <label class="toggle"><input id="published" type="checkbox" checked> Published</label>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Save & Publish</button>
+          <button type="button" id="saveDraft" class="btn btn-light">Save Draft</button>
+          <button type="button" id="deleteBtn" class="btn btn-danger" style="margin-left:auto;display:none">Delete</button>
+        </div>
+      </form>
+
+      <div style="margin-top:16px;color:#666;font-size:13px">
+        <strong>Note:</strong> All media must be URL links (images, gallery, videos). This admin writes directly to your Firebase Realtime Database path <code>/players</code>.
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div style="max-width:1200px;margin:0 auto;padding:12px 20px;color:#666">Admin connected to provided Firebase configuration. Secure this panel for production.</div>
+</footer>
+
+<!-- Firebase + Admin logic (REPLACE YOUR EXISTING <script> SECTION WITH THIS) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+/* ------------------ Firebase Config (provided) ------------------ */
+  const firebaseConfig = {
+    apiKey: "AIzaSyB6e3aosFBjX4ulFs5NhdpSY_9XmE0w_kc",
+    authDomain: "website-83a2b.firebaseapp.com",
+    databaseURL: "https://website-83a2b-default-rtdb.firebaseio.com",
+    projectId: "website-83a2b",
+    storageBucket: "website-83a2b.firebasestorage.app",
+    messagingSenderId: "10021438632",
+    appId: "1:10021438632:web:892b3b49af06503ece6e9d"
+  };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* ------------------ Shortcuts ------------------ */
+const $ = id => document.getElementById(id);
+
+const playersRef = db.ref('players');
+const listEl = $('playersList');
+const form = $('playerForm');
+
+const galleryBox = $('galleryBox');
+const videoBox = $('videoBox');
+const historyBox = $('historyBox');
+
+const addGallery = $('addGallery');
+const addVideo = $('addVideo');
+const addHistory = $('addHistory');
+
+const newBtn = $('newBtn');
+const deleteBtn = $('deleteBtn');
+const saveDraftBtn = $('saveDraft');
+const searchList = $('searchList');
+
+/* ------------------ Repeater helpers ------------------ */
+function makeGalleryRow(value=''){
+  const row = document.createElement('div');
+  row.className = 'repeat-row';
+  row.innerHTML = `
+    <div><input class="g-url" type="text" placeholder="https://...jpg" value="${escapeHtml(value)}"></div>
+    <div><button type="button" class="btn btn-danger remove">Remove</button></div>
+  `;
+  row.querySelector('.remove').onclick = ()=> row.remove();
+  galleryBox.appendChild(row);
+}
+
+function makeVideoRow(value=''){
+  const row = document.createElement('div');
+  row.className = 'repeat-row';
+  row.innerHTML = `
+    <div><input class="v-url" type="text" placeholder="https://youtube.com/..." value="${escapeHtml(value)}"></div>
+    <div><button type="button" class="btn btn-danger remove">Remove</button></div>
+  `;
+  row.querySelector('.remove').onclick = ()=> row.remove();
+  videoBox.appendChild(row);
+}
+
+function makeHistoryRow(year='', club='', apps='', goals=''){
+  const row = document.createElement('div');
+  row.className = 'repeat-row';
+  row.innerHTML = `
+    <div style="display:flex;gap:8px">
+      <input class="h-year" type="text" placeholder="Year or Season" value="${escapeHtml(year)}">
+      <input class="h-club" type="text" placeholder="Club" value="${escapeHtml(club)}">
+      <input class="h-apps" type="number" placeholder="Apps" value="${escapeHtml(apps)}">
+      <input class="h-goals" type="number" placeholder="Goals" value="${escapeHtml(goals)}">
+    </div>
+    <div><button type="button" class="btn btn-danger remove">Remove</button></div>
+  `;
+  row.querySelector('.remove').onclick = ()=> row.remove();
+  historyBox.appendChild(row);
+}
+
+/* wire add buttons */
+addGallery.addEventListener('click', ()=> makeGalleryRow());
+addVideo.addEventListener('click', ()=> makeVideoRow());
+addHistory.addEventListener('click', ()=> makeHistoryRow());
+
+/* ------------------ Reset form ------------------ */
+function resetForm(){
+  form.reset();
+  $('playerId').value = '';
+  $('formTitle').textContent = 'Create / Edit Player';
+  galleryBox.innerHTML = '';
+  videoBox.innerHTML = '';
+  historyBox.innerHTML = '';
+  // friendly UX: one empty row for each repeater
+  makeGalleryRow();
+  makeVideoRow();
+  makeHistoryRow();
+  deleteBtn.style.display = 'none';
+}
+
+/* ------------------ Collect repeaters ------------------ */
+function collectRepeaters(){
+  const gallery = Array.from(galleryBox.querySelectorAll('.g-url')).map(i=>i.value.trim()).filter(Boolean);
+  const videos = Array.from(videoBox.querySelectorAll('.v-url')).map(i=>i.value.trim()).filter(Boolean);
+  const history = Array.from(historyBox.querySelectorAll('.repeat-row')).map(row=>{
+    const year = row.querySelector('.h-year') ? row.querySelector('.h-year').value.trim() : '';
+    const club = row.querySelector('.h-club') ? row.querySelector('.h-club').value.trim() : '';
+    const apps = row.querySelector('.h-apps') ? Number(row.querySelector('.h-apps').value || 0) : 0;
+    const goals = row.querySelector('.h-goals') ? Number(row.querySelector('.h-goals').value || 0) : 0;
+    return { year, club, apps, goals };
+  }).filter(h => h.year || h.club);
+  return { gallery, videos, history };
+}
+
+/* ------------------ Normalize numbers ------------------ */
+function normalizeNumber(v){ const n = Number(v); return isNaN(n) ? 0 : n; }
+
+/* ------------------ Collect full form data (ensures top-level stats) ------------------ */
+function collectForm(){
+  const repeat = collectRepeaters();
+  const statsObj = {
+    appearances: normalizeNumber($('statApps').value),
+    goals: normalizeNumber($('statGoals').value),
+    assists: normalizeNumber($('statAssists').value),
+    minutes: normalizeNumber($('statMinutes').value),
+    yellow: normalizeNumber($('statYellow').value),
+    red: normalizeNumber($('statRed').value),
+  };
+
+  // Build the record. We include both: nested stats and top-level stats fields for compatibility.
+  const data = {
+    name: $('name').value.trim(),
+    position: $('position').value.trim(),
+    jersey: $('jersey').value ? Number($('jersey').value) : null,
+    nationality: $('nationality').value.trim(),
+    club: $('club').value.trim(),
+    contractUntil: $('contractUntil').value.trim(),
+    age: $('age').value ? Number($('age').value) : null,
+    height: $('height').value.trim(),
+    weight: $('weight').value.trim(),
+    foot: $('foot').value.trim(),
+    marketValue: $('marketValue').value ? Number($('marketValue').value) : 0,
+    photoURL: $('photoURL').value.trim(),
+    bio: $('bio').value.trim(),
+    gallery: repeat.gallery,
+    videos: repeat.videos,
+    history: repeat.history,
+    // nested stats
+    stats: statsObj,
+    // top-level stats (duplicate for compatibility with pages expecting p.goals etc.)
+    appearances: statsObj.appearances,
+    goals: statsObj.goals,
+    assists: statsObj.assists,
+    minutes: statsObj.minutes,
+    yellow: statsObj.yellow,
+    red: statsObj.red,
+    published: !!$('published').checked,
+    updatedAt: Date.now()
+  };
+  return data;
+}
+
+/* ------------------ Save (create/update) ------------------ */
+form.addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const id = $('playerId').value;
+  const data = collectForm();
+  if (!data.name){ alert('Name required'); return; }
+
+  if (id){
+    // update existing: use update so keys not present are preserved
+    playersRef.child(id).update(data).then(()=> {
+      alert('Player updated');
+      resetForm();
+    }).catch(err => alert('Error: '+err.message));
+  } else {
+    // create new
+    const newRef = playersRef.push();
+    newRef.set(data).then(()=> {
+      alert('Player created');
+      resetForm();
+    }).catch(err => alert('Error: '+err.message));
+  }
+});
+
+/* ------------------ Save Draft ------------------ */
+saveDraftBtn.addEventListener('click', ()=>{
+  const id = $('playerId').value;
+  const data = collectForm();
+  data.published = false;
+  if (id){
+    playersRef.child(id).update(data).then(()=>{ alert('Draft saved'); resetForm(); }).catch(err=>alert(err.message));
+  } else {
+    playersRef.push().set(data).then(()=>{ alert('Draft created'); resetForm(); }).catch(err=>alert(err.message));
+  }
+});
+
+/* ------------------ Delete ------------------ */
+deleteBtn.addEventListener('click', ()=>{
+  const id = $('playerId').value;
+  if (!id) return alert('Select a player to delete.');
+  if (!confirm('Delete this player permanently?')) return;
+  playersRef.child(id).remove().then(()=> { alert('Deleted'); resetForm(); }).catch(err=>alert(err.message));
+});
+
+/* ------------------ Clone ------------------ */
+function clonePlayer(id){
+  playersRef.child(id).once('value').then(s=>{
+    const p = s.val();
+    if (!p) return alert('Not found');
+    const cloned = Object.assign({}, p);
+    cloned.name = (p.name||'') + ' (Copy)';
+    cloned.createdAt = Date.now();
+    playersRef.push().set(cloned).then(()=> alert('Cloned'));
+  }).catch(err=>alert(err.message));
+}
+
+/* ------------------ Edit: load into form ------------------ */
+function editPlayer(id){
+  playersRef.child(id).once('value').then(s=>{
+    const p = s.val();
+    if (!p) return alert('Player not found.');
+    $('playerId').value = id;
+    $('formTitle').textContent = 'Edit Player — ' + (p.name||'');
+    $('name').value = p.name||'';
+    $('position').value = p.position||'';
+    $('jersey').value = p.jersey||'';
+    $('nationality').value = p.nationality||'';
+    $('club').value = p.club||'';
+    $('contractUntil').value = p.contractUntil||'';
+    $('age').value = p.age||'';
+    $('height').value = p.height||'';
+    $('weight').value = p.weight||'';
+    $('foot').value = p.foot||'';
+    $('marketValue').value = p.marketValue||'';
+    $('photoURL').value = p.photoURL||'';
+    $('bio').value = p.bio||'';
+    $('published').checked = p.published !== false;
+
+    // clear and build repeaters (backwards-compatible with both array and comma string)
+    galleryBox.innerHTML = '';
+    videoBox.innerHTML = '';
+    historyBox.innerHTML = '';
+
+    if (Array.isArray(p.gallery) && p.gallery.length) p.gallery.forEach(u => makeGalleryRow(u));
+    else if (typeof p.gallery === 'string' && p.gallery.trim()) p.gallery.split(',').map(s=>s.trim()).forEach(u=>makeGalleryRow(u));
+    else makeGalleryRow();
+
+    if (Array.isArray(p.videos) && p.videos.length) p.videos.forEach(u => makeVideoRow(u));
+    else if (typeof p.videos === 'string' && p.videos.trim()) p.videos.split(',').map(s=>s.trim()).forEach(u=>makeVideoRow(u));
+    else makeVideoRow();
+
+    if (Array.isArray(p.history) && p.history.length) p.history.forEach(h => makeHistoryRow(h.year||'', h.club||'', h.apps||'', h.goals||''));
+    else makeHistoryRow();
+
+    // Stats: check nested stats object first, then top-level fields
+    const stats = p.stats || {};
+    $('statApps').value = stats.appearances ?? stats.apps ?? (p.appearances ?? '');
+    $('statGoals').value = stats.goals ?? (p.goals ?? '');
+    $('statAssists').value = stats.assists ?? (p.assists ?? '');
+    $('statMinutes').value = stats.minutes ?? (p.minutes ?? '');
+    $('statYellow').value = stats.yellow ?? (p.yellow ?? '');
+    $('statRed').value = stats.red ?? (p.red ?? '');
+
+    deleteBtn.style.display = 'inline-block';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }).catch(err => alert(err.message));
+}
+
+// --- Reliable Country → ISO Mapping ---
+const COUNTRY_MAP = {
+      "afghanistan":"af","albania":"al","algeria":"dz","andorra":"ad","angola":"ao",
+      "argentina":"ar","armenia":"am","australia":"au","austria":"at","azerbaijan":"az",
+      "bahamas":"bs","bahrain":"bh","bangladesh":"bd","barbados":"bb","belarus":"by",
+      "belgium":"be","belize":"bz","benin":"bj","bhutan":"bt","bolivia":"bo",
+      "bosnia and herzegovina":"ba","botswana":"bw","brazil":"br","brunei":"bn","bulgaria":"bg",
+      "burkina faso":"bf","burundi":"bi","cambodia":"kh","cameroon":"cm","canada":"ca",
+      "chad":"td","chile":"cl","china":"cn","colombia":"co","comoros":"km",
+      "congo":"cg","costa rica":"cr","croatia":"hr","cuba":"cu","cyprus":"cy",
+      "czech republic":"cz","denmark":"dk","djibouti":"dj","dominica":"dm","dominican republic":"do",
+      "ecuador":"ec","egypt":"eg","el salvador":"sv","equatorial guinea":"gq","eritrea":"er",
+      "estonia":"ee","ethiopia":"et","fiji":"fj","finland":"fi","france":"fr",
+      "gabon":"ga","gambia":"gm","georgia":"ge","germany":"de","ghana":"gh",
+      "greece":"gr","grenada":"gd","guatemala":"gt","guinea":"gn","guinea-bissau":"gw",
+      "guyana":"gy","haiti":"ht","honduras":"hn","hungary":"hu","iceland":"is",
+      "india":"in","indonesia":"id","iran":"ir","iraq":"iq","ireland":"ie",
+      "israel":"il","italy":"it","jamaica":"jm","japan":"jp","jordan":"jo",
+      "kazakhstan":"kz","kenya":"ke","kiribati":"ki","kuwait":"kw","kyrgyzstan":"kg",
+      "laos":"la","latvia":"lv","lebanon":"lb","lesotho":"ls","liberia":"lr",
+      "libya":"ly","liechtenstein":"li","lithuania":"lt","luxembourg":"lu","madagascar":"mg",
+      "malawi":"mw","malaysia":"my","maldives":"mv","mali":"ml","malta":"mt",
+      "marshall islands":"mh","mauritania":"mr","mauritius":"mu","mexico":"mx","micronesia":"fm",
+      "moldova":"md","monaco":"mc","mongolia":"mn","montenegro":"me","morocco":"ma",
+      "mozambique":"mz","myanmar":"mm","namibia":"na","nauru":"nr","nepal":"np",
+      "netherlands":"nl","new zealand":"nz","nicaragua":"ni","niger":"ne","nigeria":"ng",
+      "north korea":"kp","north macedonia":"mk","norway":"no","oman":"om","pakistan":"pk",
+      "palau":"pw","panama":"pa","papua new guinea":"pg","paraguay":"py","peru":"pe",
+      "philippines":"ph","poland":"pl","portugal":"pt","qatar":"qa","romania":"ro",
+      "russia":"ru","rwanda":"rw","saint kitts and nevis":"kn","saint lucia":"lc","samoa":"ws",
+      "san marino":"sm","saudi arabia":"sa","senegal":"sn","serbia":"rs","seychelles":"sc",
+      "sierra leone":"sl","singapore":"sg","slovakia":"sk","slovenia":"si","solomon islands":"sb",
+      "somalia":"so","south africa":"za","south korea":"kr","south sudan":"ss","spain":"es",
+      "sri lanka":"lk","sudan":"sd","suriname":"sr","sweden":"se","switzerland":"ch",
+      "syria":"sy","taiwan":"tw","tajikistan":"tj","tanzania":"tz","thailand":"th",
+      "timor-leste":"tl","togo":"tg","tonga":"to","trinidad and tobago":"tt","tunisia":"tn",
+      "turkey":"tr","turkmenistan":"tm","tuvalu":"tv","uganda":"ug","ukraine":"ua",
+      "united arab emirates":"ae","united kingdom":"gb","united states":"us","uruguay":"uy","uzbekistan":"uz",
+      "vanuatu":"vu","venezuela":"ve","vietnam":"vn","yemen":"ye","zambia":"zm","zimbabwe":"zw"
+    };
+
+// --- Flag URL Builder ---
+function getFlagURL(countryName){
+  if(!countryName) return "";
+
+  const key = countryName.trim().toLowerCase();
+  const iso = COUNTRY_MAP[key];
+
+  if(!iso) return ""; // fallback: no flag
+
+  // FlagCDN – 40px wide variant
+  return `https://flagcdn.com/w40/${iso}.png`;
+}
+
+
+
+/* ------------------ Render list ------------------ */
+function renderList(players){
+  listEl.innerHTML = '';
+  const q = (searchList.value || '').trim().toLowerCase();
+  const rows = Object.entries(players || {}).sort((a,b)=>( (a[1].name||'').localeCompare(b[1].name||'') ));
+  if (!rows.length){
+    listEl.innerHTML = '<p style="padding:12px;color:#666">No players yet. Create one using the form on the right.</p>';
+    return;
+  }
+  rows.forEach(([id,p])=>{
+    const name = p.name || '';
+    if (q && !name.toLowerCase().includes(q) && !(p.position||'').toLowerCase().includes(q) && !(p.nationality||'').toLowerCase().includes(q)) return;
+    const div = document.createElement('div');
+    div.className = 'player-row';
+    div.innerHTML = `
+      <img src="${escapeHtml(p.photoURL || 'default-player.jpg')}" alt="">
+      <div class="meta">
+        <h4>${escapeHtml(p.name || 'Unnamed')}</h4>
+<p class="small">
+  ${escapeHtml(p.position || "—")} • #${escapeHtml(String(p.jersey || "—"))}
+  • <img src="${getFlagURL(p.nationality)}"
+         style="width:18px;height:12px;object-fit:cover;border-radius:2px;margin-right:4px">
+    ${escapeHtml(p.nationality || "—")}
+</p>
+
+
+        <div style="margin-top:8px">
+          <span class="${p.published !== false ? 'published' : 'unpublished'} small">${p.published !== false ? 'Published' : 'Draft'}</span>
+          <span class="small" style="margin-left:8px">€${formatNumber(p.marketValue||0)}</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="btn btn-light" data-id="${id}" data-action="edit">Edit</button>
+        <button class="btn btn-light" data-id="${id}" data-action="clone">Clone</button>
+      </div>
+    `;
+    listEl.appendChild(div);
+  });
+
+  listEl.querySelectorAll('button[data-action]').forEach(b=>{
+    b.onclick = (e)=>{
+      const id = b.getAttribute('data-id');
+      const action = b.getAttribute('data-action');
+      if (action === 'edit') editPlayer(id);
+      if (action === 'clone') clonePlayer(id);
+      e.stopPropagation();
+    };
+  });
+
+  listEl.querySelectorAll('.player-row').forEach(row=>{
+    row.onclick = () => {
+      const btn = row.querySelector('button[data-action="edit"]');
+      if (btn) btn.click();
+    };
+  });
+}
+
+/* ------------------ Search & Live listener ------------------ */
+searchList.addEventListener('input', debounce(()=>{
+  playersRef.once('value').then(s => renderList(s.val() || {}));
+}, 180));
+
+playersRef.on('value', snap => {
+  renderList(snap.val() || {});
+});
+
+/* ------------------ New button & init ------------------ */
+newBtn.addEventListener('click', ()=> resetForm());
+resetForm();
+
+/* ------------------ Utilities ------------------ */
+function escapeHtml(s){ if (s===undefined||s===null) return ''; return String(s).replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
+function formatNumber(n){ if (!n && n !== 0) return 0; return Number(n).toLocaleString(); }
+function debounce(fn, ms=200){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
+
+</script>
+
+</body>
+</html>
